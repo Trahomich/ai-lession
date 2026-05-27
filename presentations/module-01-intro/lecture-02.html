@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лекция 2 — Краткая история ИИ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-canvas: #08090a;
+      --bg-panel: #0f1011;
+      --bg-surface: #191a1b;
+      --bg-hover: #28282c;
+      --text-primary: #f7f8f8;
+      --text-secondary: #d0d6e0;
+      --text-muted: #8a8f98;
+      --text-dim: #62666d;
+      --accent: #5e6ad2;
+      --accent-bright: #7170ff;
+      --accent-hover: #828fff;
+      --green: #10b981;
+      --border: rgba(255,255,255,0.08);
+      --border-subtle: rgba(255,255,255,0.05);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-canvas);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .slide {
+      display: none;
+      height: 100vh;
+      padding: 80px 120px;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .slide.active { display: flex; }
+
+    .slide.title-slide {
+      align-items: center;
+      text-align: center;
+      background: radial-gradient(ellipse at 50% 30%, rgba(94,106,210,0.12) 0%, transparent 60%);
+    }
+
+    .slide.section-slide {
+      background: linear-gradient(135deg, rgba(94,106,210,0.08) 0%, transparent 50%);
+    }
+
+    .slide .label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 20px;
+    }
+
+    .slide h1 {
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 24px;
+      letter-spacing: -1px;
+    }
+
+    .slide h2 {
+      font-size: 44px;
+      font-weight: 600;
+      line-height: 1.2;
+      margin-bottom: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .slide h3 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-secondary);
+    }
+
+    .slide p {
+      font-size: 20px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      max-width: 800px;
+    }
+
+    .slide .subtitle {
+      font-size: 22px;
+      color: var(--text-muted);
+      max-width: 600px;
+    }
+
+    .slide ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .slide ul li {
+      font-size: 20px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      padding: 8px 0;
+      padding-left: 28px;
+      position: relative;
+    }
+
+    .slide ul li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 40px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), var(--accent-bright), var(--green));
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 28px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -36px;
+      top: 8px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg-canvas);
+    }
+
+    .timeline-item .year {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .timeline-item .desc {
+      font-size: 19px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    .card h3 {
+      font-size: 20px;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .card p {
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    .quote-box {
+      background: var(--bg-panel);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 12px 12px 0;
+      padding: 32px 40px;
+      margin: 24px 0;
+      max-width: 750px;
+    }
+
+    .quote-box p {
+      font-size: 19px;
+      font-style: italic;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .quote-box .author {
+      font-style: normal;
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-top: 12px;
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 40px;
+      margin-top: 24px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat .number {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--accent-bright);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stat .desc {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: rgba(94,106,210,0.15);
+      color: var(--accent-bright);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .tag.green {
+      background: rgba(16,185,129,0.15);
+      color: var(--green);
+    }
+
+    .hw-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 12px;
+    }
+
+    .hw-item p {
+      font-size: 18px;
+      color: var(--text-secondary);
+    }
+
+    /* Progress bar */
+    .progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-bright));
+      transition: width 0.3s ease;
+      z-index: 100;
+    }
+
+    /* Slide counter */
+    .counter {
+      position: fixed;
+      bottom: 32px;
+      right: 40px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text-dim);
+      z-index: 100;
+    }
+
+    /* Nav buttons */
+    .nav-btn {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--accent);
+    }
+
+    .nav-prev { left: 20px; }
+    .nav-next { right: 20px; }
+
+    .winter-badge {
+      display: inline-block;
+      background: rgba(220,38,38,0.15);
+      color: #ef4444;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+
+    .boom-badge {
+      display: inline-block;
+      background: rgba(16,185,129,0.15);
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+  <div class="counter" id="counter"></div>
+  <button class="nav-btn nav-prev" onclick="go(-1)">←</button>
+  <button class="nav-btn nav-next" onclick="go(1)">→</button>
+
+  <!-- Slide 1: Title -->
+  <div class="slide title-slide active">
+    <div class="label">Модуль 1 · Лекция 2</div>
+    <h1>Краткая история ИИ</h1>
+    <p class="subtitle">80 лет взлётов, падений и озарений — от кибернетики до ChatGPT</p>
+  </div>
+
+  <!-- Slide 2: Plan -->
+  <div class="slide">
+    <div class="label">План лекции</div>
+    <h2>Что сегодня разберём</h2>
+    <ul>
+      <li>Предыстория и зарождение (1940–1960-е)</li>
+      <li>Зимы и возрождения (1970–1990-е)</li>
+      <li>Ренессанс глубокого обучения (2000–2020-е)</li>
+      <li>Почему именно сейчас?</li>
+    </ul>
+  </div>
+
+  <!-- Slide 3: Section - Prehistory -->
+  <div class="slide section-slide">
+    <div class="label">Секция 1</div>
+    <h1>Предыстория и зарождение</h1>
+    <p>1940–1960-е годы</p>
+  </div>
+
+  <!-- Slide 4: McCulloch-Pitts -->
+  <div class="slide">
+    <div class="label">1943</div>
+    <h2>Первый искусственный нейрон</h2>
+    <p style="margin-bottom: 20px;">Маккалл и Питтс предложили математическую модель нейрона:</p>
+    <div class="two-col">
+      <div class="card">
+        <h3>Идея</h3>
+        <p>Нейрон принимает сигналы, суммирует их и выдаёт 0 или 1. Если соединить много таких — можно вычислить любую логическую функцию.</p>
+      </div>
+      <div class="card">
+        <h3>Значение</h3>
+        <p>Чистая теория. Никакой программы не существовало. Но идея — «простые элементы + связи = интеллект» — стала фундаментом.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: Turing -->
+  <div class="slide">
+    <div class="label">1950</div>
+    <h2>Тьюринг и его тест</h2>
+    <div class="quote-box">
+      <p>«Может ли машина мыслить?»</p>
+      <div class="author">— Алан Тьюринг, «Computing Machinery and Intelligence»</div>
+    </div>
+    <p style="margin-top: 16px;">Судья переписывается с двумя собеседниками: человеком и машиной. Если не может отличить — машина «прошла тест».</p>
+    <p style="margin-top: 12px; color: var(--text-muted);">Тьюринг думал, что машина пройдёт тест к 2000 году. Это случилось лишь в 2014-м.</p>
+  </div>
+
+  <!-- Slide 6: Dartmouth -->
+  <div class="slide">
+    <div class="label">1956</div>
+    <h2>Дартмутский семинар</h2>
+    <div class="quote-box">
+      <p>«Каждая сторона обучения или любая другая особенность интеллекта в принципе может быть настолько точно описана, что машина может быть создана для её симуляции.»</p>
+      <div class="author">— Заявка на семинар, Джон Маккарти</div>
+    </div>
+    <p style="margin-top: 16px;">Маккарти придумал термин <strong>«Artificial Intelligence»</strong>. Участники верили, что решат проблему за одно лето.</p>
+    <p style="margin-top: 8px; color: var(--text-muted);">Оптимизм был преждевременным. Но семинар дал области имя и направление.</p>
+  </div>
+
+  <!-- Slide 7: Perceptron & Minsky -->
+  <div class="slide">
+    <div class="two-col">
+      <div>
+        <div class="boom-badge">1957 — подъём</div>
+        <h3>Перцептрон Розенблатта</h3>
+        <p style="font-size: 18px; color: var(--text-secondary); line-height: 1.6;">Первая обучаемая нейросеть. Классифицировала геометрические фигуры. Газеты писали: «Машина, которая умеет учиться!»</p>
+      </div>
+      <div>
+        <div class="winter-badge">1969 — спад</div>
+        <h3>Книга Минского и Паперта</h3>
+        <p style="font-size: 18px; color: var(--text-secondary); line-height: 1.6;">Доказали ограничения однослойного перцептрона (не может вычислить XOR). Финансирование нейросетей сократилось. Начало первой зимы.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8: Section - Winters -->
+  <div class="slide section-slide">
+    <div class="label">Секция 2</div>
+    <h1>Зимы и возрождения</h1>
+    <p>1970–1990-е годы</p>
+  </div>
+
+  <!-- Slide 9: First winter -->
+  <div class="slide">
+    <div class="winter-badge">Первая зима ИИ</div>
+    <h2>1970-е: разочарование</h2>
+    <ul>
+      <li>Завышенные обещания не выполнились — «думающая машина» не появилась</li>
+      <li>DARPA сократила финансирование</li>
+      <li>Отчёт Лайтхилла в Великобритании назвал исследования ИИ «тупиком»</li>
+      <li>Многие учёные ушли из области</li>
+    </ul>
+  </div>
+
+  <!-- Slide 10: Expert systems -->
+  <div class="slide">
+    <div class="boom-badge">1980-е: экспертные системы</div>
+    <h2>Вместо обучения — знания экспертов</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="year">MYCIN</div>
+        <div class="desc">Диагностика инфекций — точность 69%, лучше многих врачей</div>
+      </div>
+      <div class="timeline-item">
+        <div class="year">XCON</div>
+        <div class="desc">Конфигурация компьютеров VAX — экономила DEC $40 млн/год</div>
+      </div>
+      <div class="timeline-item">
+        <div class="year">Проблема</div>
+        <div class="desc">Хрупкость, трудоёмкость, отсутствие обучения, нет масштабирования</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 11: Second winter + Backprop -->
+  <div class="slide">
+    <div class="two-col">
+      <div>
+        <div class="winter-badge">Вторая зима</div>
+        <h3>Конец 1980-х</h3>
+        <p style="font-size: 18px; color: var(--text-secondary); line-height: 1.6;">Рынок ИИ обрушился. 10 000 правил работали, 100 000 — нет. Компании закрылись.</p>
+      </div>
+      <div>
+        <div class="boom-badge">1986 — луч света</div>
+        <h3>Backpropagation</h3>
+        <p style="font-size: 18px; color: var(--text-secondary); line-height: 1.6;">Румельхарт, Хинтон, Уильямс опубликовали метод обратного распространения ошибки. Ключ к обучению глубоких сетей. Но компьютеры были слишком слабыми...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 12: Key lesson -->
+  <div class="slide">
+    <div class="quote-box" style="max-width: 100%; border-left-color: var(--green);">
+      <p>Каждая «зима» рождала фундаментальные идеи. Зимы — это не провал, а время, когда зреют семена.</p>
+    </div>
+    <div class="stat-row" style="justify-content: center; margin-top: 40px;">
+      <div class="stat">
+        <div class="number">1943</div>
+        <div class="desc">Нейрон Маккалла-Питтса</div>
+      </div>
+      <div class="stat">
+        <div class="number">1986</div>
+        <div class="desc">Backpropagation</div>
+      </div>
+      <div class="stat">
+        <div class="number">2012</div>
+        <div class="desc">AlexNet</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 13: Section - Renaissance -->
+  <div class="slide section-slide">
+    <div class="label">Секция 3</div>
+    <h1>Ренессанс глубокого обучения</h1>
+    <p>2000–2020-е годы</p>
+  </div>
+
+  <!-- Slide 14: Three factors -->
+  <div class="slide">
+    <div class="label">Почему теперь?</div>
+    <h2>Три фактора совпали</h2>
+    <div class="two-col" style="margin-top: 24px;">
+      <div class="card">
+        <h3>📊 Данные</h3>
+        <p>Интернет = триллионы текстов, изображений, видео. В 2000 г. весь интернет ≈ 25 ТБ текста. Сегодня — эксабайты.</p>
+      </div>
+      <div class="card">
+        <h3>🎮 Вычисления</h3>
+        <p>GPU от Nvidia — от игровых карточек до H100 по $30 000. Microsoft построила суперкомпьютер за $1 млрд для OpenAI.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top: 20px;">
+      <h3>🧠 Алгоритмы</h3>
+      <p>Трансформер (2017) оказался масштабируемым: больше параметров + больше данных = лучше результат.</p>
+    </div>
+  </div>
+
+  <!-- Slide 15: AlexNet -->
+  <div class="slide">
+    <div class="boom-badge">2012 — момент «всё изменилось»</div>
+    <h2>AlexNet побеждает в ImageNet</h2>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="number">15.3%</div>
+        <div class="desc">Ошибка AlexNet</div>
+      </div>
+      <div class="stat">
+        <div class="number">26.2%</div>
+        <div class="desc">Ближайший конкурент</div>
+      </div>
+      <div class="stat">
+        <div class="number">~2×</div>
+        <div class="desc">Разрыв</div>
+      </div>
+    </div>
+    <p style="margin-top: 32px;">Секрет: глубокая свёрточная нейросеть + GPU + хитрые трюки обучения. Весь мир ИИ понял: глубокое обучение работает.</p>
+  </div>
+
+  <!-- Slide 16: Timeline 2014-2022 -->
+  <div class="slide">
+    <div class="label">2014 → 2022</div>
+    <h2>От GAN до ChatGPT</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="year">2014</div>
+        <div class="desc">GAN — ИИ учится создавать изображения. Генератор vs дискриминатор.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="year">2017</div>
+        <div class="desc">«Attention Is All You Need» — рождение трансформера. Фундамент ChatGPT, Claude, LLaMA.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="year">2020</div>
+        <div class="desc">GPT-3 — 175 млрд параметров. Пишет код, эссе, стихи.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="year">2022</div>
+        <div class="desc">ChatGPT — 1 млн пользователей за 5 дней. ИИ становится массовым.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 17: ChatGPT moment -->
+  <div class="slide">
+    <div class="boom-badge">30 ноября 2022</div>
+    <h2>ChatGPT меняет правила</h2>
+    <div class="stat-row" style="margin-bottom: 24px;">
+      <div class="stat">
+        <div class="number">1M</div>
+        <div class="desc">пользователей за 5 дней</div>
+      </div>
+      <div class="stat">
+        <div class="number">100M</div>
+        <div class="desc">пользователей за 2 месяца</div>
+      </div>
+    </div>
+    <p>ChatGPT не был техническим прорывом — GPT-3.5 уже существовал. Это был прорыв в <strong>доступности</strong>. ИИ вышел из лабораторий к обычным людям.</p>
+  </div>
+
+  <!-- Slide 18: 2023-2024 -->
+  <div class="slide">
+    <div class="label">2023–2024</div>
+    <h2>Мультимодальность</h2>
+    <p style="margin-bottom: 24px;">Модели научились работать не только с текстом:</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <span class="tag green">GPT-4V — текст + изображения</span>
+      <span class="tag green">Gemini — текст + видео + звук</span>
+      <span class="tag green">DALL-E 3 — генерация изображений</span>
+      <span class="tag green">Sora — генерация видео</span>
+      <span class="tag green">ElevenLabs — клонирование речи</span>
+    </div>
+    <p style="margin-top: 24px; color: var(--text-muted);">Тренд: одна модель — все модальности. ИИ становится «универсальным».</p>
+  </div>
+
+  <!-- Slide 19: Analogy -->
+  <div class="slide">
+    <div class="quote-box" style="max-width: 100%; border-left-color: var(--green);">
+      <p>Двигатель внутреннего сгорания изобрели в XIX веке. Но автомобили стали массовыми только когда появились: 1) дешёвая нефть, 2) дороги, 3) конвейер Форда.</p>
+      <div class="author" style="margin-top: 16px;">Точно так же нейросети существовали с 1950-х, но ждали данных, GPU и правильных алгоритмов.</div>
+    </div>
+  </div>
+
+  <!-- Slide 20: Summary -->
+  <div class="slide">
+    <div class="label">Итоги</div>
+    <h2>Главное из лекции</h2>
+    <ul>
+      <li>ИИ прошёл через циклы: оптимизм → ожидания → разочарование → зима → новые идеи</li>
+      <li>Каждая «зима» рождала фундаментальные идеи (backpropagation — зимой 1986-го!)</li>
+      <li>Современный ИИ = данные + вычисления + алгоритмы</li>
+      <li>Трансформер (2017) — фундамент всех современных LLM</li>
+      <li>ChatGPT (2022) — момент, когда ИИ стал массовым</li>
+    </ul>
+  </div>
+
+  <!-- Slide 21: Homework -->
+  <div class="slide">
+    <div class="label">Домашнее задание</div>
+    <h2>На следующую лекцию</h2>
+    <div class="hw-item">
+      <p>1. Выбрать один исторический момент из лекции и написать абзац: почему это событие было важным?</p>
+    </div>
+    <div class="hw-item">
+      <p>2. Бонус: найти факт об истории ИИ, который не упоминался на лекции.</p>
+    </div>
+    <p style="margin-top: 24px; color: var(--text-muted);">Лекция 3: «Что такое алгоритм и программа» — чем обычное программирование отличается от ИИ.</p>
+  </div>
+
+  <script>
+    let current = 0;
+    const slides = document.querySelectorAll('.slide');
+    const total = slides.length;
+
+    function show(n) {
+      slides[current].classList.remove('active');
+      current = ((n % total) + total) % total;
+      slides[current].classList.add('active');
+      document.getElementById('progress').style.width = ((current + 1) / total * 100) + '%';
+      document.getElementById('counter').textContent = (current + 1) + ' / ' + total;
+    }
+
+    function go(dir) { show(current + dir); }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+      else if (e.key === 'ArrowLeft') go(-1);
+    });
+
+    let touchX;
+    document.addEventListener('touchstart', e => touchX = e.touches[0].clientX);
+    document.addEventListener('touchend', e => {
+      const diff = e.changedTouches[0].clientX - touchX;
+      if (Math.abs(diff) > 50) go(diff > 0 ? -1 : 1);
+    });
+
+    show(0);
+  </script>
+</body>
+</html>
