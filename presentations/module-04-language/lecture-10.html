@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 10. Трансформеры — архитектура, изменившая всё</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden;height:100vh}
+.slide{display:none;flex-direction:column;justify-content:center;align-items:center;height:100vh;padding:60px 80px;position:relative}
+.slide.active{display:flex}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#6366f1,#8b5cf6);z-index:100;transition:width .3s}
+.nav{position:fixed;bottom:30px;right:40px;display:flex;gap:12px;z-index:100}
+.nav button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#aaa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s}
+.nav button:hover{background:rgba(255,255,255,.15);color:#fff}
+.counter{position:fixed;bottom:35px;left:40px;color:#555;font-size:13px;z-index:100}
+h1{font-size:3em;font-weight:700;color:#fff;text-align:center;margin-bottom:16px;line-height:1.2}
+h2{font-size:2.2em;font-weight:600;color:#fff;text-align:center;margin-bottom:24px}
+h3{font-size:1.5em;color:#a78bfa;margin-bottom:16px}
+.subtitle{font-size:1.3em;color:#888;text-align:center;margin-bottom:40px}
+.content{max-width:900px;width:100%}
+.content p{font-size:1.15em;line-height:1.7;margin-bottom:16px;color:#ccc}
+.content ul{font-size:1.1em;line-height:1.8;color:#ccc;margin-left:24px;margin-bottom:16px}
+.content li{margin-bottom:8px}
+.highlight{color:#a78bfa;font-weight:600}
+.accent{color:#6366f1}
+.tag{display:inline-block;background:rgba(99,102,241,.15);color:#a78bfa;padding:4px 12px;border-radius:6px;font-size:.85em;margin:4px}
+.timeline{position:relative;max-width:800px;width:100%}
+.timeline-item{display:flex;align-items:flex-start;margin-bottom:20px}
+.timeline-year{color:#a78bfa;font-weight:700;font-size:1.1em;min-width:80px}
+.timeline-text{color:#ccc;font-size:1em;line-height:1.5}
+.diagram{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:30px;margin:16px 0;text-align:center;font-family:'Courier New',monospace;font-size:1em;color:#888;line-height:1.8}
+.box{display:inline-block;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);padding:12px 20px;border-radius:8px;margin:6px;color:#a78bfa;font-size:.95em}
+.box-row{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:16px 0}
+.big-num{font-size:4em;font-weight:700;color:#6366f1}
+.quote-box{background:rgba(139,92,246,.08);border-left:4px solid #8b5cf6;padding:24px 30px;border-radius:0 12px 12px 0;margin:20px 0;font-style:italic;color:#ccc;font-size:1.1em}
+.arrow{color:#6366f1;font-size:1.3em;margin:0 8px}
+.section-tag{position:absolute;top:30px;left:40px;font-size:.8em;color:#555;text-transform:uppercase;letter-spacing:2px}
+.demo-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:24px;margin:16px 0}
+.demo-box p{color:#aaa;font-size:1em}
+.attn-word{display:inline-block;padding:4px 8px;margin:2px;border-radius:4px;font-size:1.1em}
+.attn-high{background:rgba(139,92,246,.4);color:#fff;font-weight:600}
+.attn-med{background:rgba(139,92,246,.2);color:#ccc}
+.attn-low{background:rgba(139,92,246,.05);color:#888}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="counter" id="counter"></div>
+
+<!-- Slide 1: Title -->
+<div class="slide active">
+<div class="subtitle">Модуль 4. Язык и текст — как ИИ читает и пишет</div>
+<h1>Трансформеры</h1>
+<div class="subtitle">Архитектура, изменившая всё</div>
+<div class="tag">Лекция 10</div>
+</div>
+
+<!-- Slide 2: Attention Is All You Need -->
+<div class="slide">
+<div class="section-tag">Введение</div>
+<h2>2017 год — статья, которая изменила ИИ</h2>
+<div class="content">
+<div class="quote-box">
+«Attention Is All You Need»<br><br>
+Васвани, Шаззер, Пармар и др. — Google Brain<br>
+12 июня 2017
+</div>
+<p>Самая цитируемая статья в современном ИИ</p>
+<p>За 7 лет трансформеры стали основой <span class="highlight">ChatGPT, Claude, LLaMA, Midjourney</span></p>
+</div>
+</div>
+
+<!-- Slide 3: Problem -->
+<div class="slide">
+<div class="section-tag">Проблема</div>
+<h2>Почему RNN не справлялся</h2>
+<div class="content">
+<div class="box-row">
+<div class="box">RNN: читает слово за словом</div>
+</div>
+<p><span class="highlight">Проблема 1: короткая память</span> — забывает начало текста</p>
+<p><span class="highlight">Проблема 2: нет параллелизма</span> — каждое слово ждёт предыдущее</p>
+<div class="diagram">
+Слово 1 → Слово 2 → Слово 3 → ... → Слово 100<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br>
+h₁&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;&nbsp;h₂&nbsp;&nbsp;&nbsp;&nbsp;→&nbsp;&nbsp;&nbsp;h₃&nbsp;&nbsp;&nbsp;&nbsp;→ ... → h₁₀₀<br><br>
+<span style="color:#666">Градиент затухает — информация теряется</span>
+</div>
+</div>
+</div>
+
+<!-- Slide 4: LSTM attempt -->
+<div class="slide">
+<div class="section-tag">Проблема</div>
+<h2>LSTM и GRU — полумеры</h2>
+<div class="content">
+<p>LSTM добавила «вентили» — что запомнить, что забыть</p>
+<p>GRU — упрощённая версия LSTM</p>
+<p><span class="highlight">Частично</span> решили проблему памяти</p>
+<p>Но остались <span class="highlight">последовательными</span> — параллелить нельзя</p>
+<div class="quote-box">
+Для GPU — которые идеально подходят для параллельных вычислений — последовательная обработка была катастрофой.
+</div>
+<p>К 2016 году стало ясно: нужен принципиально другой подход</p>
+</div>
+</div>
+
+<!-- Slide 5: Attention idea -->
+<div class="slide">
+<div class="section-tag">Ключевая идея</div>
+<h2>Пусть каждое слово «посмотрит» на все остальные</h2>
+<div class="content">
+<div class="diagram">
+<span class="attn-high">Банк</span> <span class="attn-med">закрылся</span> <span class="attn-low">после</span> <span class="attn-low">того</span> <span class="attn-low">как</span> <span class="attn-high">река</span> <span class="attn-high">затопила</span> <span class="attn-med">берег</span><br><br>
+<span style="color:#888">«банк» ←сильная связь→ «река», «затопила»</span><br>
+<span style="color:#666">Это берег реки, а не финансовое учреждение!</span>
+</div>
+<p>Контекст определяет смысл</p>
+<p>Внимание делает это <span class="highlight">математически</span></p>
+</div>
+</div>
+
+<!-- Slide 6: QKV -->
+<div class="slide">
+<div class="section-tag">Attention</div>
+<h2>Query, Key, Value</h2>
+<div class="content">
+<div class="demo-box">
+<p>Аналогия с библиотекой:</p><br>
+<p><span class="highlight">Query (запрос)</span> — «что я ищу» → вы говорите библиотекарю «книги о кошках»</p>
+<p><span class="highlight">Key (ключ)</span> — «что я предлагаю» → карточка каждой книги с ключевыми словами</p>
+<p><span class="highlight">Value (значение)</span> — «содержание» → сам текст книги</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 7: Attention mechanics -->
+<div class="slide">
+<div class="section-tag">Attention</div>
+<h2>Как работает Attention</h2>
+<div class="content">
+<div class="diagram">
+1. Каждое слово → Q, K, V (три вектора)<br><br>
+2. Q × Kᵀ → оценка «релевантности» каждой пары слов<br><br>
+3. Softmax → нормализация в вероятности (сумма = 1)<br><br>
+4. Взвешенная сумма V → итоговый вектор слова<br><br>
+<span style="color:#a78bfa">Attention(Q,K,V) = softmax(Q × Kᵀ / √d) × V</span>
+</div>
+<p>Деление на √d — масштабирование, чтобы оценки не «взрывались»</p>
+</div>
+</div>
+
+<!-- Slide 8: Self-attention example -->
+<div class="slide">
+<div class="section-tag">Attention</div>
+<h2>Self-attention в действии</h2>
+<div class="content">
+<div class="demo-box">
+<p>«Программист написал код, потому что <span class="attn-high">он</span> хотел протестировать <span class="attn-high">его</span>»</p>
+</div>
+<p><span class="highlight">«он»</span> ← сильный attention → <span class="highlight">«программист»</span></p>
+<p><span class="highlight">«его»</span> ← сильный attention → <span class="highlight">«код»</span></p>
+<br>
+<p>Никто не прописывал эти правила — модель выучила их на миллиардах текстов</p>
+</div>
+</div>
+
+<!-- Slide 9: Multi-head -->
+<div class="slide">
+<div class="section-tag">Attention</div>
+<h2>Multi-head attention — много голов</h2>
+<div class="content">
+<div class="box-row">
+<div class="box">Голова 1: синтаксис</div>
+<div class="box">Голова 2: семантика</div>
+<div class="box">Голова 3: позиция</div>
+<div class="box">Голова 4: тема</div>
+</div>
+<p>Каждая голова смотрит «со своей колокольни»</p>
+<p>Результаты конкатенируются → линейное преобразование</p>
+<div class="timeline">
+<div class="timeline-item">
+<div class="timeline-year">Оригинал</div>
+<div class="timeline-text">8 голов внимания</div>
+</div>
+<div class="timeline-item">
+<div class="timeline-year">GPT-3</div>
+<div class="timeline-text">96 голов</div>
+</div>
+<div class="timeline-item">
+<div class="timeline-year">GPT-4</div>
+<div class="timeline-text">120+ голов (предположительно)</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Slide 10: Positional encoding -->
+<div class="slide">
+<div class="section-tag">Позиция</div>
+<h2>Positional encoding — где стоит слово</h2>
+<div class="content">
+<p>Self-attention обрабатывает все слова <span class="highlight">одновременно</span></p>
+<p>Модель не знает порядок — нужно добавить!</p>
+<div class="diagram">
+Embedding слова + Позиционный код = Итоговый вектор<br><br>
+<span style="color:#888">[0.2, 0.5, ...]</span> + <span style="color:#a78bfa">[0.01, 0.84, ...]</span> = <span style="color:#fff">[0.21, 1.34, ...]</span><br>
+<span style="color:#666"> слово&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; позиция 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; итог</span>
+</div>
+<div class="quote-box">
+Аналогия: в кинотеатре все зрители одинаковые, но у каждого билет с номером ряда и места. Без билета — хаос.
+</div>
+</div>
+</div>
+
+<!-- Slide 11: Encoder vs Decoder -->
+<div class="slide">
+<div class="section-tag">Архитектура</div>
+<h2>Encoder vs Decoder</h2>
+<div class="content">
+<div class="box-row">
+<div class="box" style="border-color:rgba(34,197,94,.4);color:#4ade80">Encoder: понимает текст<br><small>BERT, поиск, классификация</small></div>
+<div class="box" style="border-color:rgba(59,130,246,.4);color:#60a5fa">Decoder: генерирует текст<br><small>GPT, перевод, диалог</small></div>
+<div class="box" style="border-color:rgba(251,191,36,.4);color:#fbbf24">Оба: текст → текст<br><small>T5, BART, перевод</small></div>
+</div>
+<p><span class="highlight">GPT = только Decoder</span> — читает предыдущие токены, предсказывает следующий</p>
+<p><span class="highlight">BERT = только Encoder</span> — читает весь текст, создаёт представления</p>
+</div>
+</div>
+
+<!-- Slide 12: One layer -->
+<div class="slide">
+<div class="section-tag">Архитектура</div>
+<h2>Один слой трансформера</h2>
+<div class="content">
+<div class="diagram">
+Вход<br>
+↓<br>
+[Multi-head Self-Attention] → [Add & Norm]<br>
+↓<br>
+[Feed-Forward Network] → [Add & Norm]<br>
+↓<br>
+Выход<br><br>
+<span style="color:#666">Skip connections: информация «перепрыгивает» через каждый подслой</span>
+</div>
+<div class="box-row">
+<div class="box">GPT-3: 96 слоёв</div>
+<div class="box">LLaMA-2 70B: 80 слоёв</div>
+</div>
+</div>
+</div>
+
+<!-- Slide 13: Masking -->
+<div class="slide">
+<div class="section-tag">Архитектура</div>
+<h2>Маскирование в Decoder</h2>
+<div class="content">
+<p>Decoder генерирует последовательно, но attention — параллельный</p>
+<p>Нельзя «подглядывать» в будущие токены!</p>
+<div class="diagram">
+Токен 1: видит [<span class="highlight">1</span> 0 0 0 0]<br>
+Токен 2: видит [<span class="highlight">1 1</span> 0 0 0]<br>
+Токен 3: видит [<span class="highlight">1 1 1</span> 0 0]<br>
+Токен 4: видит [<span class="highlight">1 1 1 1</span> 0]<br>
+Токен 5: видит [<span class="highlight">1 1 1 1 1</span>]<br><br>
+<span style="color:#666">Треугольная маска — будущее закрыто</span>
+</div>
+</div>
+</div>
+
+<!-- Slide 14: Why transformer won -->
+<div class="slide">
+<div class="section-tag">Почему победил</div>
+<h2>Три причины победы</h2>
+<div class="content">
+<div class="box-row">
+<div class="box">
+<span class="big-num">1</span><br>
+Параллелизм
+</div>
+<div class="box">
+<span class="big-num">2</span><br>
+Дальние связи
+</div>
+<div class="box">
+<span class="big-num">3</span><br>
+Масштабируемость
+</div>
+</div>
+<p>Все токены обрабатываются одновременно → GPU раскрывает потенциал</p>
+<p>Каждый токен напрямую видит все остальные → нет затухания</p>
+<p>Больше данных + параметры + вычисления = лучше качество</p>
+<div class="quote-box">
+Scaling laws: за трансформером обнаружили простую закономерность — масштаб решает.
+</div>
+</div>
+</div>
+
+<!-- Slide 15: Beyond text -->
+<div class="slide">
+<div class="section-tag">Трансформер повсюду</div>
+<h2>Не только текст</h2>
+<div class="content">
+<div class="timeline">
+<div class="timeline-item">
+<div class="timeline-year">NLP</div>
+<div class="timeline-text">GPT, BERT, T5 — текст</div>
+</div>
+<div class="timeline-item">
+<div class="timeline-year">Vision</div>
+<div class="timeline-text">ViT — изображение как последовательность «патчей»</div>
+</div>
+<div class="timeline-item">
+<div class="timeline-year">Audio</div>
+<div class="timeline-text">Whisper — речь как последовательность</div>
+</div>
+<div class="timeline-item">
+<div class="timeline-year">Video</div>
+<div class="timeline-text">Sora — видео как spacetime patches</div>
+</div>
+<div class="timeline-item">
+<div class="timeline-year">Multi</div>
+<div class="timeline-text">GPT-4o — текст + изображение + звук</div>
+</div>
+</div>
+<p>Трансформер — <span class="highlight">универсальная архитектура</span> для последовательностей</p>
+</div>
+</div>
+
+<!-- Slide 16: Key takeaways -->
+<div class="slide">
+<div class="section-tag">Итоги</div>
+<h2>Что запомнить</h2>
+<div class="content">
+<ul>
+<li><span class="highlight">Attention</span> — каждое слово «видит» весь контекст сразу</li>
+<li><span class="highlight">Positional encoding</span> — сообщает, где стоит слово</li>
+<li><span class="highlight">Multi-head</span> — несколько перспектив одновременно</li>
+<li><span class="highlight">Skip connections</span> — информация перепрыгивает через слои</li>
+<li><span class="highlight">Параллелизм</span> — быстрое обучение на гигантских данных</li>
+<li>GPT = Decoder, BERT = Encoder, T5 = оба</li>
+</ul>
+</div>
+</div>
+
+<!-- Slide 17: Homework -->
+<div class="slide">
+<div class="section-tag">Домашнее задание</div>
+<h2>ДЗ</h2>
+<div class="content">
+<div class="demo-box">
+<p><span class="highlight">Обязательное:</span></p>
+<p>Открыть Attention Visualizer, загрузить 3 предложения на русском, найти слово с наибольшим attention от выделенного слова</p>
+</div>
+<div class="demo-box">
+<p><span class="highlight">Дополнительное:</span></p>
+<p>Прочитать введение статьи «Attention Is All You Need» (первую страницу), выписать 3 вопроса</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 18: Next -->
+<div class="slide">
+<div class="section-tag">Следующая лекция</div>
+<h2>Лекция 11</h2>
+<div class="subtitle">Большие языковые модели (LLM)<br>как работает ChatGPT</div>
+<div class="content">
+<p style="text-align:center;color:#888">Возьмём трансформер, накормим его всем интернетом<br>и получим модель, с которой вы уже общаетесь</p>
+</div>
+</div>
+
+<div class="nav">
+<button onclick="go(-1)">← Назад</button>
+<button onclick="go(1)">Далее →</button>
+</div>
+
+<script>
+let cur=0,slides=document.querySelectorAll('.slide');
+function show(){slides.forEach((s,i)=>{s.classList.toggle('active',i===cur)});document.getElementById('progress').style.width=((cur+1)/slides.length*100)+'%';document.getElementById('counter').textContent=(cur+1)+' / '+slides.length}
+function go(d){cur=Math.max(0,Math.min(slides.length-1,cur+d));show()}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')go(1);if(e.key==='ArrowLeft')go(-1)});
+let tx=0;document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX});document.addEventListener('touchend',e=>{let dx=e.changedTouches[0].clientX-tx;if(dx>50)go(-1);if(dx<-50)go(1)});
+show();
+</script>
+</body>
+</html>
