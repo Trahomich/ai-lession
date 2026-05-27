@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 16 — Будущее ИИ: прогнозы и реальность</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0a0a;color:#e5e5e5;overflow:hidden;height:100vh}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#6366f1,#a855f7);z-index:100;transition:width .3s}
+.slide{display:none;height:100vh;padding:60px 80px;flex-direction:column;justify-content:center}
+.slide.active{display:flex}
+.slide-number{position:fixed;bottom:30px;right:40px;font-size:13px;color:#525252;font-weight:500}
+h1{font-size:56px;font-weight:700;line-height:1.1;margin-bottom:20px;background:linear-gradient(135deg,#fff 0%,#a78bfa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+h2{font-size:40px;font-weight:600;margin-bottom:30px;color:#fff}
+h3{font-size:28px;font-weight:500;margin-bottom:16px;color:#c4b5fd}
+.subtitle{font-size:22px;color:#a3a3a3;margin-bottom:10px}
+.meta{font-size:16px;color:#525252;margin-top:20px}
+p,li{font-size:20px;line-height:1.7;color:#d4d4d4}
+ul{list-style:none;padding-left:0}
+ul li{padding:8px 0 8px 28px;position:relative}
+ul li::before{content:'→';position:absolute;left:0;color:#6366f1}
+.content{max-width:900px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:50px}
+.tag{display:inline-block;padding:4px 14px;border-radius:20px;font-size:14px;font-weight:500;margin:4px}
+.tag-purple{background:#6366f122;color:#a78bfa;border:1px solid #6366f144}
+.tag-green{background:#22c55e22;color:#4ade80;border:1px solid #22c55e44}
+.tag-red{background:#ef444422;color:#f87171;border:1px solid #ef444444}
+.tag-blue{background:#3b82f622;color:#60a5fa;border:1px solid #3b82f644}
+.quote{border-left:3px solid #6366f1;padding:20px 30px;font-size:24px;font-style:italic;color:#c4b5fd;background:#6366f108;border-radius:0 8px 8px 0}
+.highlight{color:#a78bfa;font-weight:600}
+.dim{color:#737373}
+big{font-size:72px;font-weight:800;background:linear-gradient(135deg,#6366f1,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.timeline{border-left:2px solid #6366f1;margin-left:20px;padding-left:30px}
+.timeline .item{margin-bottom:20px;position:relative}
+.timeline .item::before{content:'';position:absolute;left:-37px;top:8px;width:12px;height:12px;border-radius:50%;background:#6366f1}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:30px;align-items:center}
+.vs-divider{font-size:40px;color:#6366f1;font-weight:700}
+.card{background:#161616;border:1px solid #262626;border-radius:12px;padding:24px;margin:8px 0}
+.card-title{font-size:18px;font-weight:600;color:#fff;margin-bottom:8px}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:500;margin-bottom:8px}
+.badge-purple{background:#6366f133;color:#a78bfa}
+.badge-green{background:#22c55e33;color:#4ade80}
+.badge-red{background:#ef444433;color:#f87171}
+.badge-blue{background:#3b82f633;color:#60a5fa}
+nav{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:100}
+nav button{width:10px;height:10px;border-radius:50%;border:none;background:#333;cursor:pointer;transition:all .2s}
+nav button.active{background:#6366f1;transform:scale(1.3)}
+.key{display:inline-block;background:#1a1a2e;border:1px solid #333;border-radius:6px;padding:2px 10px;font-size:14px;color:#888;font-family:monospace}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="slide-number" id="slideNum"></div>
+<nav id="dots"></nav>
+
+<!-- Slide 1: Title -->
+<div class="slide active">
+<div class="content">
+<p class="subtitle">Лекция 16</p>
+<h1>Будущее ИИ:<br>прогнозы и реальность</h1>
+<p class="meta">Модуль 6 — ИИ в реальном мире</p>
+<p class="meta">Последняя лекция курса</p>
+</div>
+</div>
+
+<!-- Slide 2: Overview -->
+<div class="slide">
+<div class="content">
+<h2>Сегодня</h2>
+<ul>
+<li>AGI — когда машина станет умнее человека?</li>
+<li>Регулирование ИИ в мире</li>
+<li>ИИ как инструмент, а не замена</li>
+<li>Практические советы — как жить с ИИ уже сегодня</li>
+<li>Итоги всего курса</li>
+</ul>
+</div>
+</div>
+
+<!-- Slide 3: What is AGI -->
+<div class="slide">
+<div class="content">
+<h2>Что такое AGI</h2>
+<p>Artificial General Intelligence — общий искусственный интеллект</p>
+<div style="margin-top:30px" class="two-col">
+<div>
+<h3>Что есть сейчас</h3>
+<p class="dim">Narrow AI — узкий ИИ</p>
+<p class="dim">ChatGPT пишет текст, но не водит машину</p>
+<p class="dim">Tesla ездит, но не напишет стих</p>
+</div>
+<div>
+<h3>AGI</h3>
+<p class="highlight">Любая интеллектуальная задача</p>
+<p class="highlight">Обучение, рассуждение, адаптация</p>
+<p class="highlight">Перенос знаний между областями</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Slide 4: Expert opinions -->
+<div class="slide">
+<div class="content">
+<h2>Прогнозы экспертов</h2>
+<div class="vs">
+<div class="card">
+<div class="badge badge-green">Оптимисты</div>
+<div class="card-title">5-10 лет</div>
+<p>Курцвейл, Альтман. Масштабирование сработает. Сингулярность к 2045.</p>
+</div>
+<div class="vs-divider">vs</div>
+<div class="card">
+<div class="badge badge-red">Скептики</div>
+<div class="card-title">50+ лет или никогда</div>
+<p>Маркус. LLM — тупик. Предсказание токена ≠ мышление. Нужны новые подходы.</p>
+</div>
+</div>
+<div class="card" style="margin-top:20px">
+<div class="badge badge-blue">Реалисты</div>
+<div class="card-title">10-20 лет, но путь не прямолинеен</div>
+<p>Хинтон, Лекун. Прогресс очевиден, но потребуются новые архитектуры.</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 5: Arguments for -->
+<div class="slide">
+<div class="content">
+<h2>Аргументы «за» скорый AGI</h2>
+<ul>
+<li>Масштабирование работает — эмерджентные способности появляются сами</li>
+<li>GPT-4 качественно отличается от GPT-2 — не только объёмом</li>
+<li>Мультимодальность: зрение + слух + текст + действие</li>
+<li>Агентные системы: ИИ вызывает инструменты, ищет, планирует</li>
+<li>Chain-of-thought — пошаговое рассуждение становится реальностью</li>
+</ul>
+</div>
+</div>
+
+<!-- Slide 6: Arguments against -->
+<div class="slide">
+<div class="content">
+<h2>Аргументы «против»</h2>
+<ul>
+<li>LLM не «думает» — аппроксимирует распределение токенов</li>
+<li>Нет модели мира — нет понимания физики, причинности, времени</li>
+<li>Сознание ≠ интеллект — мы не знаем, что такое сознание</li>
+<li>Масштабирование может упереться в потолок данных и энергии</li>
+</ul>
+<div class="quote" style="margin-top:30px">
+Самолёт не «машет крыльями», но летает быстрее любой птицы.
+</div>
+</div>
+</div>
+
+<!-- Slide 7: Regulation -->
+<div class="slide">
+<div class="content">
+<h2>Регулирование ИИ</h2>
+<div class="two-col">
+<div class="card">
+<div class="badge badge-blue">EU AI Act</div>
+<p>Классификация по риску. Запрет социального рейтинга. Маркировка генеративного контента.</p>
+</div>
+<div class="card">
+<div class="badge badge-purple">США</div>
+<p>Voluntary commitments. Executive orders. Фокус на безопасность и биориски.</p>
+</div>
+<div class="card">
+<div class="badge badge-red">Китай</div>
+<p>Жёсткое регулирование. Генеративный ИИ — по «социалистическим ценностям». Deepfake — маркировать.</p>
+</div>
+<div class="card">
+<div class="badge badge-green">Россия</div>
+<p>Стратегия до 2030. Суверенный ИИ. GigaChat, Yandex MODE.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Slide 8: Key conflict -->
+<div class="slide">
+<div class="content">
+<h2>Ключевой конфликт</h2>
+<div class="vs">
+<div>
+<h3>Инновации</h3>
+<p class="dim">Регулировать мягко</p>
+<p class="dim">Не тормозить прогресс</p>
+<p class="dim">Компании уедут</p>
+</div>
+<div class="vs-divider">↔</div>
+<div>
+<h3>Безопасность</h3>
+<p class="highlight">Защитить людей</p>
+<p class="highlight">Контролировать риски</p>
+<p class="highlight">Предотвратить катастрофы</p>
+</div>
+</div>
+<div class="quote" style="margin-top:30px">
+Аналогия с ядерным нераспространением — нужны международные договоры.
+</div>
+</div>
+</div>
+
+<!-- Slide 9: AI as tool -->
+<div class="slide">
+<div class="content">
+<div class="quote">
+«ИИ вас не заменит. Человек, использующий ИИ, заменит человека, который его не использует.»
+</div>
+</div>
+</div>
+
+<!-- Slide 10: What AI does well -->
+<div class="slide">
+<div class="content">
+<h2>ИИ делает хорошо</h2>
+<ul>
+<li>Обработка больших объёмов информации — часы в секунды</li>
+<li>Генерация вариантов — 10 заголовков, 5 версий письма, 20 идей</li>
+<li>Рутина — форматирование, проверка, заполнение шаблонов</li>
+<li>Персонализация — масштабная, для каждого ученика, пациента, клиента</li>
+</ul>
+</div>
+</div>
+
+<!-- Slide 11: What AI does badly -->
+<div class="slide">
+<div class="content">
+<h2>ИИ делает плохо</h2>
+<div class="two-col">
+<div class="card">
+<div class="card-title">Эмпатия</div>
+<p class="dim">Имитирует, но не чувствует</p>
+</div>
+<div class="card">
+<div class="card-title">Моральные решения</div>
+<p class="dim">Нет ценностей — нет ответственности</p>
+</div>
+<div class="card">
+<div class="card-title">Творчество</div>
+<p class="dim">Комбинирует, не создаёт из ничего</p>
+</div>
+<div class="card">
+<div class="card-title">Ответственность</div>
+<p class="dim">Инструмент не отвечает — отвечает человек</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Slide 12: New professions -->
+<div class="slide">
+<div class="content">
+<h2>Новые профессии</h2>
+<ul>
+<li>Prompt-инженер — формулирование запросов к ИИ</li>
+<li>AI-тренер — обучение и тонкая настройка моделей</li>
+<li>AI-этик — принципы и ограничения для систем ИИ</li>
+<li>AI-аудитор — проверка на безопасность и bias</li>
+<li>Human-in-the-loop — оператор контроля решений ИИ</li>
+</ul>
+</div>
+</div>
+
+<!-- Slide 13: Collaboration -->
+<div class="slide">
+<div class="content">
+<h2>Сотрудничество > замены</h2>
+<p style="text-align:center;font-size:28px;margin-bottom:30px">
+<span class="highlight">ИИ + человек</span> > ИИ > человек
+</p>
+<ul>
+<li>Врач с ИИ диагностирует точнее, чем врач без ИИ</li>
+<li>Программист с Copilot пишет код быстрее</li>
+<li>Модель — augment, не replace</li>
+</ul>
+<p style="margin-top:20px;color:#737373">Усиление человеческих способностей, а не замена человека</p>
+</div>
+</div>
+
+<!-- Slide 14: Practical tips -->
+<div class="slide">
+<div class="content">
+<h2>Жить с ИИ уже сегодня</h2>
+<div class="two-col">
+<div>
+<h3>Используй как ассистента</h3>
+<p>Переписать, суммаризировать, мозговой штурм, объяснить, найти ошибку</p>
+<h3 style="margin-top:20px">Проверяй факты</h3>
+<p>Если факт важен — проверь. Галлюцинации реальны.</p>
+</div>
+<div>
+<h3>Защищай данные</h3>
+<p>Не вводи пароли, коммерческую тайну, мед. информацию. Используй локальные модели.</p>
+<h3 style="margin-top:20px">Развивай «человеческие» навыки</h3>
+<p>Критическое мышление, коммуникация, эмоциональный интеллект.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Slide 15: Course summary -->
+<div class="slide">
+<div class="content">
+<h2>16 лекций — 5 минут</h2>
+<div class="timeline">
+<div class="item"><strong>Модуль 1.</strong> Интеллект не требует сознания. 80 лет зим и возрождений.</div>
+<div class="item"><strong>Модуль 2.</strong> ML: данные + ответы → правила. Градиентный спуск.</div>
+<div class="item"><strong>Модуль 3.</strong> Нейрон → сеть → CNN. Backpropagation.</div>
+<div class="item"><strong>Модуль 4.</strong> Токены → embeddings → attention → LLM.</div>
+<div class="item"><strong>Модуль 5.</strong> Diffusion. Видео, звук, музыка, deepfake.</div>
+<div class="item"><strong>Модуль 6.</strong> ИИ повсюду. Галлюцинации, bias, экология. Будущее.</div>
+</div>
+</div>
+</div>
+
+<!-- Slide 16: Main conclusion -->
+<div class="slide">
+<div class="content">
+<div class="quote" style="font-size:28px;border-left-width:4px">
+ИИ — это не магия. Это математика, данные и вычисления.
+</div>
+<p style="margin-top:40px;font-size:22px">За каждым «умным» ответом ChatGPT стоит статистическая модель, обученная на миллиардах текстов.</p>
+<p style="margin-top:20px;font-size:22px">За каждым сгенерированным изображением — диффузия, убирающая шум.</p>
+<p style="margin-top:30px;font-size:20px;color:#737373">Теперь вы знаете, как это работает. Используйте осознанно.</p>
+</div>
+</div>
+
+<!-- Slide 17: Final homework -->
+<div class="slide">
+<div class="content">
+<h2>Финальное задание</h2>
+<p style="font-size:24px;margin-bottom:30px">Эссе: «Как ИИ изменит мою профессию/жизнь за ближайшие 5 лет»</p>
+<ul>
+<li>Как ИИ уже влияет на вашу сферу</li>
+<li>Что изменится в ближайшие 5 лет (реалистично)</li>
+<li>Что вы можете сделать, чтобы быть готовым</li>
+<li>Чего вы опасаетесь и на что надеетесь</li>
+</ul>
+<p class="meta" style="margin-top:30px">Минимум 500 слов</p>
+</div>
+</div>
+
+<!-- Slide 18: Thank you -->
+<div class="slide">
+<div class="content" style="text-align:center">
+<h1 style="font-size:64px">Спасибо!</h1>
+<p style="font-size:22px;color:#a3a3a3;margin-top:30px">16 лекций. 6 модулей. От нейрона до GPT-4.</p>
+<p style="font-size:20px;color:#737373;margin-top:20px">Если хотя бы раз вы подумали «я знаю, что сейчас происходит внутри» —<br>курс выполнил свою задачу.</p>
+<p style="font-size:24px;margin-top:40px" class="highlight">ИИ — мощный инструмент. Не более. И не менее.</p>
+</div>
+</div>
+
+<script>
+const slides=document.querySelectorAll('.slide'),dots=document.getElementById('dots'),prog=document.getElementById('progress'),num=document.getElementById('slideNum');
+let cur=0;
+function show(i){slides[cur].classList.remove('active');cur=i;slides[cur].classList.add('active');dots.querySelectorAll('button').forEach((d,j)=>d.classList.toggle('active',j===cur));prog.style.width=((cur+1)/slides.length*100)+'%';num.textContent=`${cur+1} / ${slides.length}`}
+slides.forEach((_,i)=>{const d=document.createElement('button');d.onclick=()=>show(i);dots.appendChild(d)});
+show(0);
+document.onkeydown=e=>{if(e.key==='ArrowRight'||e.key===' '||e.key==='ArrowDown')show(Math.min(cur+1,slides.length-1));if(e.key==='ArrowLeft'||e.key==='ArrowUp')show(Math.max(cur-1,0));if(e.key==='Home')show(0);if(e.key==='End')show(slides.length-1)};
+let tx=0;document.ontouchstart=e=>tx=e.touches[0].clientX;document.ontouchend=e=>{const d=e.changedTouches[0].clientX-tx;if(d<-50)show(Math.min(cur+1,slides.length-1));if(d>50)show(Math.max(cur-1,0))};
+</script>
+</body>
+</html>
