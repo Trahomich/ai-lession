@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 14. Где ИИ уже работает</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overflow:hidden;height:100vh}
+.slide{display:none;height:100vh;padding:80px 120px;position:relative}
+.slide.active{display:flex;flex-direction:column;justify-content:center}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#6366f1,#8b5cf6);z-index:100;transition:width .3s}
+.nav{position:fixed;bottom:30px;right:40px;display:flex;gap:8px;z-index:100}
+.nav button{background:rgba(255,255,255,.1);border:none;color:#fff;width:40px;height:40px;border-radius:8px;cursor:pointer;font-size:18px;transition:background .2s}
+.nav button:hover{background:rgba(255,255,255,.2)}
+.slide-num{position:fixed;bottom:35px;left:40px;color:#555;font-size:14px;z-index:100}
+h1{font-size:52px;font-weight:700;line-height:1.2;margin-bottom:20px;background:linear-gradient(135deg,#fff 0%,#a5b4fc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+h2{font-size:36px;font-weight:600;margin-bottom:30px;color:#fff}
+h3{font-size:24px;font-weight:600;margin-bottom:16px;color:#a5b4fc}
+.subtitle{font-size:22px;color:#888;margin-bottom:40px}
+p,li{font-size:20px;line-height:1.7;color:#ccc}
+ul{list-style:none;padding:0}
+li{padding:8px 0 8px 24px;position:relative}
+li::before{content:'';position:absolute;left:0;top:17px;width:8px;height:8px;border-radius:50%;background:#6366f1}
+.highlight{color:#a5b4fc;font-weight:600}
+.tag{display:inline-block;background:rgba(99,102,241,.15);color:#a5b4fc;padding:4px 12px;border-radius:6px;font-size:14px;margin:4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:20px}
+.card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:24px}
+.card h3{margin-bottom:12px}
+.stat{font-size:48px;font-weight:700;color:#6366f1;margin-bottom:8px}
+.stat-label{font-size:16px;color:#888}
+.quote{border-left:3px solid #6366f1;padding:20px 30px;margin:30px 0;font-style:italic;font-size:22px;color:#aaa;background:rgba(99,102,241,.05);border-radius:0 8px 8px 0}
+.demo{background:rgba(139,92,246,.1);border:1px dashed rgba(139,92,246,.3);border-radius:12px;padding:30px;margin-top:20px}
+.demo h3{color:#c4b5fd}
+.warning{background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.2);border-radius:8px;padding:16px 20px;margin-top:16px;font-size:18px;color:#fbbf24}
+.gray{color:#666;font-size:16px}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="slide-num" id="slideNum"></div>
+<div class="nav">
+<button onclick="prev()">&#8592;</button>
+<button onclick="next()">&#8594;</button>
+</div>
+
+<div class="slide active">
+<h1>Где ИИ уже работает<br><span style="font-size:32px;color:#888">(и вы этого не замечаете)</span></h1>
+<p class="subtitle">Лекция 14 · Модуль 6. ИИ в реальном мире</p>
+<p class="gray">Курс «Искусственный интеллект — как это работает»</p>
+</div>
+
+<div class="slide">
+<h2>Вы взаимодействуете с ИИ<br>десятки раз в день</h2>
+<p style="font-size:24px;margin-bottom:30px">Просто не всегда это замечаете</p>
+<div class="grid">
+<div class="card"><p class="highlight">YouTube рекомендует</p><p>Персональная лента для каждого из 2 млрд пользователей</p></div>
+<div class="card"><p class="highlight">Gmail фильтрует спам</p><p>99%+ спама — блокируется до того как вы его увидите</p></div>
+<div class="card"><p class="highlight">Google Translate</p><p>100+ млрд слов переводятся каждый день</p></div>
+<div class="card"><p class="highlight">Банк одобряет кредит</p><p>90%+ решений — принимает ML-модель за 2 секунды</p></div>
+</div>
+</div>
+
+<div class="slide">
+<h2>План лекции</h2>
+<ul>
+<li>Рекомендательные системы — самый мощный и незаметный ИИ</li>
+<li>Коммуникация и информация — спам, перевод, голосовые помощники</li>
+<li>Индустрии — медицина, финансы, транспорт, сельское хозяйство</li>
+<li>ИИ на службе у государства — безопасность, умные города</li>
+</ul>
+</div>
+
+<div class="slide">
+<h2>Рекомендательные системы</h2>
+<div class="stat">2 млрд</div>
+<p class="stat-label">пользователей YouTube — каждому своя уникальная лента</p>
+<div class="quote">Каждый день 500 часов видео загружаются каждую минуту. ИИ решает — что показать именно вам.</div>
+</div>
+
+<div class="slide">
+<h2>Как работают рекомендации</h2>
+<p style="margin-bottom:20px">Два основных подхода:</p>
+<div class="grid">
+<div class="card">
+<h3>Коллаборативная фильтрация</h3>
+<p>«Пользователи с похожим вкусом также смотрели»</p>
+<p class="gray" style="margin-top:12px">Вы → похожие пользователи → что они смотрели → рекомендация</p>
+</div>
+<div class="card">
+<h3>Контентная фильтрация</h3>
+<p>«Похожее по содержанию на то, что вы уже смотрели»</p>
+<p class="gray" style="margin-top:12px">Теги, тема, содержание → похожие видео → рекомендация</p>
+</div>
+</div>
+<p style="margin-top:20px">В реальности — <span class="highlight">гибридный подход</span> + множество сигналов: watch time, лайки, поиск, время суток, устройство, регион...</p>
+</div>
+
+<div class="slide">
+<h2>Embedding-пространство</h2>
+<p style="margin-bottom:20px">Каждый пользователь и каждое видео — точка в многомерном пространстве</p>
+<div class="card">
+<p>Если embedding пользователя <span class="highlight">рядом</span> с embedding видео → рекомендуем</p>
+<p style="margin-top:12px">Это тот же принцип, что Word2Vec для слов — но для людей и контента</p>
+</div>
+<div class="grid" style="margin-top:20px">
+<div class="card"><p class="stat" style="font-size:36px">80%</p><p class="stat-label">контента Netflix — результат рекомендаций</p></div>
+<div class="card"><p class="stat" style="font-size:36px">30 мин</p><p class="stat-label">хватает TikTok, чтобы узнать вас лучше друзей</p></div>
+</div>
+</div>
+
+<div class="slide">
+<h2>Echo chamber — ловушка рекомендаций</h2>
+<p>Алгоритм оптимизирует <span class="highlight">вовлечённость</span>, не разнообразие</p>
+<div class="card" style="margin-top:20px">
+<p>Вы кликаете → алгоритм показывает больше такого же → лента сужается → вы видите только то, что подтверждает ваши взгляды</p>
+</div>
+<div class="warning">
+Исследования: YouTube может «затянуть» от умеренного контента к радикальному за 5-10 шагов рекомендаций
+</div>
+<p style="margin-top:16px;color:#888">Это не злой умысел. Это оптимизация метрики вовлечённости.</p>
+</div>
+
+<div class="slide">
+<h2>Коммуникация и информация</h2>
+<div class="grid">
+<div class="card">
+<h3>Спам-фильтры</h3>
+<p>300 млрд писем/день, ~50% — спам</p>
+<p>Gmail: 99%+ точность, менее 0.05% ложных срабатываний</p>
+</div>
+<div class="card">
+<h3>Голосовые помощники</h3>
+<p>Siri, Алиса, Alexa — цепочка из 5 ML-моделей за 1-2 секунды</p>
+<p>Речь → текст → намерение → ответ → речь</p>
+</div>
+<div class="card">
+<h3>Машинный перевод</h3>
+<p>Эволюция: правила → статистика → нейросети → трансформеры</p>
+<p>GPT-4 переводит лучше большинства непрофессионалов</p>
+</div>
+<div class="card">
+<h3>Автодополнение</h3>
+<p>Т9 и автокоррекция — мини-LLM на вашем телефоне</p>
+<p>Предсказывает следующее слово по контексту</p>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<h2>Медицина</h2>
+<p style="margin-bottom:20px">ИИ — не замена врачей. «Второе мнение», которое никогда не устаёт.</p>
+<div class="grid">
+<div class="card">
+<h3>Диагностика по снимкам</h3>
+<ul>
+<li>Рак кожи: CNN 95%+ точности</li>
+<li>Ретинопатия: раньше, чем симптомы</li>
+<li>Рентген и МРТ: подсветка подозрительных областей</li>
+</ul>
+</div>
+<div class="card">
+<h3>Открытие лекарств</h3>
+<ul>
+<li>Традиционно: 10-15 лет, $2.6 млрд</li>
+<li>AlphaFold: 200 млн структур белков</li>
+<li>Insilico: лекарство за 30 месяцев вместо 5 лет</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<h2>Финансы</h2>
+<div class="grid">
+<div class="card">
+<h3>Кредитный скоринг</h3>
+<p>200+ признаков → решение за 2 секунды</p>
+<p>90%+ кредитных решений в крупных банках — ML</p>
+</div>
+<div class="card">
+<h3>Fraud detection</h3>
+<p>Каждая транзакция по карте проверяется ML-моделью</p>
+<p>Аномалия → мгновенный блок</p>
+</div>
+<div class="card">
+<h3>Алгоритмическая торговля</h3>
+<p>60-70% объёма торгов — алгоритмы</p>
+<p>HFT: сделки за микросекунды</p>
+</div>
+<div class="card">
+<h3>Паттерн</h3>
+<p>ML-модель знает ваш обычный паттерн трат</p>
+<p>«Ночная покупка на $2000 в другой стране» → блок</p>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<h2>Транспорт</h2>
+<div class="grid">
+<div class="card">
+<h3>Автопилот</h3>
+<p>Tesla, Waymo — камеры, лидары, радары</p>
+<p>Распознаёт: пешеходы, знаки, машины, светофоры</p>
+<p>Уровни 0-5 автономности. Сейчас: 2-3</p>
+</div>
+<div class="card">
+<h3>Оптимизация маршрутов</h3>
+<p>Google Maps предсказывает пробки в реальном времени</p>
+<p>UPS ORION: экономит 100 млн миль/год</p>
+<p>Даже правило «не поворачивать налево» — ML-оптимизация</p>
+</div>
+</div>
+<div class="card" style="margin-top:20px">
+<h3>Amazon: предиктивная логистика</h3>
+<p>ИИ предсказывает, что вы закажете, и перемещает товар на ближайший склад <span class="highlight">до вашего заказа</span></p>
+</div>
+</div>
+
+<div class="slide">
+<h2>Сельское хозяйство и производство</h2>
+<div class="grid">
+<div class="card">
+<h3>Точное земледелие</h3>
+<ul>
+<li>Дроны + CNN анализируют поля</li>
+<li>Где сорняки, болезни, нехватка воды</li>
+<li>Обработка только проблемных участков</li>
+<li>John Deere нанимает больше ML-инженеров, чем механиков</li>
+</ul>
+</div>
+<div class="card">
+<h3>Производство</h3>
+<ul>
+<li>Предиктивное обслуживание: «Двигатель выйдет из строя через 2 недели»</li>
+<li>Контроль качества: CNN проверяет каждую деталь за мс</li>
+<li>Оптимизация процессов: температура, давление, скорость</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<h2>ИИ на службе у государства</h2>
+<div class="grid">
+<div class="card">
+<h3>Распознавание лиц</h3>
+<p>Камеры + ИИ = идентификация в толпе</p>
+<p>Поиск преступников, passport control в аэропортах</p>
+<p class="warning" style="padding:8px 12px;font-size:15px">Где граница между безопасностью и слежкой?</p>
+</div>
+<div class="card">
+<h3>Умные города</h3>
+<ul>
+<li>Светофоры: -15-25% пробок</li>
+<li>Smart grid: прогноз энергопотребления</li>
+<li>Умные мусорные контейнеры</li>
+</ul>
+</div>
+</div>
+<div class="card" style="margin-top:20px">
+<h3>Контент-модерация</h3>
+<p>Facebook: ИИ удаляет <span class="highlight">97%</span> контента с терроризмом <span class="highlight">до того</span>, как его увидит хоть один пользователь</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="demo">
+<h3>🔍 Демонстрация</h3>
+<p style="font-size:22px;margin-bottom:16px">Открываем YouTube «Рекомендуемое»</p>
+<p>Выберите любое видео из рекомендаций — почему YouTube его порекомендовал?</p>
+<ul style="margin-top:16px">
+<li>Вы смотрели похожее ранее</li>
+<li>Похожие пользователи смотрели</li>
+<li>Популярно в вашем регионе</li>
+<li>Соответствует вашим подпискам</li>
+<li>Свежее и набирает просмотры</li>
+</ul>
+</div>
+</div>
+
+<div class="slide">
+<h2>Итоги</h2>
+<div class="grid">
+<div class="card">
+<p class="highlight">Рекомендации</p>
+<p>Самый мощный и незаметный ИИ. Определяют, что вы смотрите, читаете, покупаете</p>
+</div>
+<div class="card">
+<p class="highlight">Коммуникация</p>
+<p>Спам-фильтры, переводчики, голосовые помощники — всё ML</p>
+</div>
+<div class="card">
+<p class="highlight">Индустрии</p>
+<p>Медицина, финансы, транспорт, сельское хозяйство, производство</p>
+</div>
+<div class="card">
+<p class="highlight">Государство</p>
+<p>Безопасность, умные города, модерация контента</p>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<h2>Домашнее задание</h2>
+<div class="card" style="margin-top:20px">
+<p style="font-size:24px;margin-bottom:16px">В течение <span class="highlight">одного дня</span> запишите каждый случай, когда с вами взаимодействовал ИИ</p>
+<p>Не только очевидные (ChatGPT, Siri), но и незаметные:</p>
+<ul style="margin-top:12px">
+<li>Рекомендации YouTube / TikTok / Instagram</li>
+<li>Спам-фильтр Gmail</li>
+<li>Автокоррекция на телефоне</li>
+<li>Лента новостей</li>
+<li>Реклама в интернете</li>
+<li>Маршрут в навигаторе</li>
+</ul>
+<p style="margin-top:16px;color:#888">Сколько раз за день? Результат может удивить.</p>
+</div>
+</div>
+
+<div class="slide">
+<h1>Лекция 15</h1>
+<p class="subtitle">Ограничения и риски ИИ — почему ИИ не всесилен</p>
+<p style="color:#555">Галлюцинации · Смещения · Чёрный ящик · Экология</p>
+</div>
+
+</div></body></html>
