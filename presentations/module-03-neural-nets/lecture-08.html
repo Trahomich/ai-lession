@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 8 — Свёрточные нейросети (CNN)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overflow:hidden;height:100vh}
+.slide{display:none;height:100vh;padding:60px 80px;position:relative}
+.slide.active{display:flex;flex-direction:column;justify-content:center}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#6366f1,#8b5cf6);transition:width .3s;z-index:100}
+.nav{position:fixed;bottom:30px;right:40px;display:flex;gap:12px;z-index:100}
+.nav button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#e5e5e5;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s}
+.nav button:hover{background:rgba(255,255,255,.15)}
+.slide-counter{position:fixed;bottom:30px;left:40px;color:#666;font-size:13px;z-index:100}
+h1{font-size:52px;font-weight:700;line-height:1.15;margin-bottom:20px;background:linear-gradient(135deg,#fff 0%,#a5b4fc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+h2{font-size:38px;font-weight:600;margin-bottom:30px;color:#c7d2fe}
+h3{font-size:24px;font-weight:600;margin-bottom:16px;color:#a5b4fc}
+.subtitle{font-size:22px;color:#888;margin-bottom:40px}
+p,.text{font-size:20px;line-height:1.7;color:#d4d4d4;margin-bottom:16px}
+.highlight{color:#818cf8;font-weight:500}
+.accent{color:#a78bfa;font-weight:600}
+.tag{display:inline-block;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;padding:4px 12px;border-radius:20px;font-size:14px;margin:4px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:20px}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:24px}
+.card h3{margin-bottom:12px}
+ul{list-style:none;padding:0}
+ul li{font-size:19px;line-height:1.8;color:#d4d4d4;padding-left:24px;position:relative}
+ul li::before{content:"→";position:absolute;left:0;color:#6366f1}
+.formula{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);border-radius:8px;padding:20px;font-family:'Courier New',monospace;font-size:18px;color:#c7d2fe;margin:16px 0;text-align:center}
+.demo-box{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:12px;padding:24px;margin-top:20px}
+.demo-box .label{color:#a78bfa;font-size:14px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.matrix{display:inline-block;font-family:'Courier New',monospace;font-size:16px;line-height:1.6;color:#a5b4fc;background:rgba(99,102,241,.1);padding:12px 16px;border-radius:6px;margin:8px 0}
+.small{font-size:16px;color:#888}
+.step{display:flex;align-items:flex-start;gap:16px;margin-bottom:16px}
+.step-num{background:#6366f1;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;margin-top:2px}
+.bottom-note{position:absolute;bottom:40px;left:80px;right:80px;font-size:15px;color:#555}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="slide-counter" id="counter"></div>
+
+<!-- Slide 1: Title -->
+<div class="slide active">
+<h1>Свёрточные нейросети (CNN)</h1>
+<div class="subtitle">Как ИИ «видит» картинки</div>
+<p class="small">Лекция 8 · Модуль 3. Нейросети — от нейрона до глубокого обучения</p>
+</div>
+
+<!-- Slide 2: Problem -->
+<div class="slide">
+<h2>Почему обычная сеть не подходит?</h2>
+<div class="grid">
+<div class="card">
+<h3>Размер данных</h3>
+<p>Фото 1000×1000 RGB = <span class="accent">3 млн чисел</span></p>
+<p>Первый скрытый слой (1000 нейронов) = <span class="accent">3 млрд весов</span></p>
+<p class="small">Только на одном слое!</p>
+</div>
+<div class="card">
+<h3>Потеря структуры</h3>
+<p>Полносвязная сеть не знает, что пиксели — <span class="highlight">соседи</span></p>
+<p>Для неё все пиксели — одинаковые числа</p>
+<p class="small">Как читать книгу с перемешанными буквами</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 3: Image as numbers -->
+<div class="slide">
+<h2>Изображение = массив чисел</h2>
+<p>Каждый <span class="highlight">пиксель</span> — три числа (RGB) от 0 до 255</p>
+<div class="formula">
+Пиксель: (R=255, G=128, B=0) → оранжевый цвет
+</div>
+<p>Фотография с телефона: <span class="accent">12 млн пикселей = 36 млн чисел</span></p>
+<div class="demo-box">
+<div class="label">аналогия</div>
+<p>Человек видит не пиксели — он видит линии, формы, объекты. Зрительная кора работает <span class="highlight">от простого к сложному</span>.</p>
+</div>
+</div>
+
+<!-- Slide 4: What is convolution -->
+<div class="slide">
+<h2>Свёртка — поиск узоров</h2>
+<p>Маленькая матрица (<span class="highlight">фильтр</span>) скользит по изображению и находит паттерны</p>
+<div class="grid">
+<div>
+<h3>Как работает</h3>
+<ul>
+<li>Фильтр 3×3 накладывается на фрагмент</li>
+<li>Каждый пиксель × вес фильтра</li>
+<li>Всё складывается → одно число</li>
+<li>Сдвиг на 1 пиксель → повтор</li>
+</ul>
+</div>
+<div>
+<h3>Фильтр «вертикальный край»</h3>
+<div class="matrix">-1  0  1<br>-1  0  1<br>-1  0  1</div>
+<p class="small">Даёт большое значение там, где вертикальная граница</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 5: Feature hierarchy -->
+<div class="slide">
+<h2>Иерархия признаков</h2>
+<div class="step">
+<div class="step-num">1</div>
+<div><span class="accent">Первые слои</span> — края, линии, градиенты</div>
+</div>
+<div class="step">
+<div class="step-num">2</div>
+<div><span class="accent">Средние слои</span> — текстуры, формы, части объектов</div>
+</div>
+<div class="step">
+<div class="step-num">3</div>
+<div><span class="accent">Глубокие слои</span> — объекты: глаза, колёса, лица, цифры</div>
+</div>
+<div class="demo-box">
+<div class="label">ключевой принцип</div>
+<p>CNN строит представление <span class="highlight">от простого к сложному</span> — как зрительная кора человека</p>
+</div>
+</div>
+
+<!-- Slide 6: Feature maps -->
+<div class="slide">
+<h2>Карты признаков</h2>
+<p>Один фильтр → одна карта признаков. <span class="accent">64 фильтра → 64 карты</span>.</p>
+<div class="formula">
+Вход: 32×32×3 (RGB) → После Conv(64): 32×32×64
+</div>
+<p>Каждая карта показывает <span class="highlight">где</span> на изображении найден конкретный узор</p>
+<div class="demo-box">
+<div class="label">аналогия</div>
+<p>64 «фонарика», каждый подсвечивает свой тип узора на картинке</p>
+</div>
+</div>
+
+<!-- Slide 7: Convolution parameters -->
+<div class="slide">
+<h2>Параметры свёртки</h2>
+<div class="grid">
+<div class="card">
+<h3>Stride (шаг)</h3>
+<p>На сколько пикселей сдвигается фильтр</p>
+<p>Stride 1 → тот же размер</p>
+<p>Stride 2 → размер ×0.5</p>
+</div>
+<div class="card">
+<h3>Padding (дополнение)</h3>
+<p>Нули по краям изображения</p>
+<p>«Same» → выход = вход по размеру</p>
+<p>«Valid» → без дополнения, меньше</p>
+</div>
+<div class="card">
+<h3>Dilation (расширение)</h3>
+<p>«Раздвигание» фильтра с дырками</p>
+<p>Охватывает большую область</p>
+<p>Без увеличения параметров</p>
+</div>
+<div class="card">
+<h3>Количество фильтров</h3>
+<p>Определяет глубину выхода</p>
+<p>32, 64, 128, 256 — типичные значения</p>
+<p>Больше фильтров = больше признаков</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 8: Pooling -->
+<div class="slide">
+<h2>Пулинг — сжатие с сохранением сути</h2>
+<p><span class="highlight">Max Pooling</span>: берём максимум из окна 2×2</p>
+<div class="formula">
+6  2  →  6<br>
+3  8  →  max(6,2,3,8) = 8
+</div>
+<div class="grid">
+<div class="card">
+<h3>Зачем</h3>
+<ul>
+<li>Меньше данных → быстрее</li>
+<li>Меньше параметров → меньше overfitting</li>
+<li>Инвариантность к сдвигам</li>
+</ul>
+</div>
+<div class="card">
+<h3>Аналогия</h3>
+<p>Смотреть на пейзаж через трубочку и запоминать только <span class="accent">самую яркую</span> точку в каждом участке</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 9: Full architecture -->
+<div class="slide">
+<h2>Архитектура CNN</h2>
+<div class="formula" style="font-size:16px;text-align:left;line-height:2">
+Входное изображение<br>
+→ <span class="highlight">Conv → ReLU → Pool</span><br>
+→ <span class="highlight">Conv → ReLU → Pool</span><br>
+→ <span class="highlight">Conv → ReLU → Pool</span><br>
+→ Flatten (разворачиваем в вектор)<br>
+→ <span class="accent">Fully Connected → ReLU</span><br>
+→ <span class="accent">Fully Connected → Softmax</span><br>
+→ Ответ: «кот — 94%, собака — 5%, птица — 1%»
+</div>
+<p>Каждый блок: <span class="highlight">меньше размер</span>, <span class="highlight">больше признаков</span></p>
+</div>
+
+<!-- Slide 10: Flatten + Softmax -->
+<div class="slide">
+<h2>От признаков к решению</h2>
+<div class="grid">
+<div class="card">
+<h3>Flatten</h3>
+<p>«Стопка» карт признаков → один вектор</p>
+<p>Например: 7×7×512 = <span class="accent">25 088 чисел</span></p>
+</div>
+<div class="card">
+<h3>Softmax</h3>
+<p>Превращает числа в <span class="highlight">вероятности</span></p>
+<p>Сумма всех выходов = 1 (100%)</p>
+<p>«Я на 94% уверен, что это кот»</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 11: Famous architectures -->
+<div class="slide">
+<h2>Знаменитые архитектуры</h2>
+<div class="step">
+<div class="step-num">98</div>
+<div><span class="accent">LeNet-5</span> — Ян ЛеКун, распознавание цифр на чеках. 5 слоёв, 60K параметров</div>
+</div>
+<div class="step">
+<div class="step-num">12</div>
+<div><span class="accent">AlexNet</span> — прорыв! 8 слоёв, 60M параметров, GPU. ImageNet с огромным отрывом</div>
+</div>
+<div class="step">
+<div class="step-num">14</div>
+<div><span class="accent">VGG</span> — простота: все фильтры 3×3, просто много слоёв (16–19)</div>
+</div>
+<div class="step">
+<div class="step-num">15</div>
+<div><span class="accent">ResNet</span> — 152 слоя! Skip connections → информация «перепрыгивает» через слои</div>
+</div>
+</div>
+
+<!-- Slide 12: Face recognition -->
+<div class="slide">
+<h2>Применение: распознавание лиц</h2>
+<p>CNN находит лицо → извлекает ключевые точки → сравнивает с эталоном</p>
+<div class="demo-box">
+<div class="label">реальность</div>
+<p>Разблокировка телефона, безопасность, массовое наблюдение</p>
+<p class="small">Этические проблемы — обсудим в лекции 15</p>
+</div>
+</div>
+
+<!-- Slide 13: Medicine -->
+<div class="slide">
+<h2>Применение: медицина</h2>
+<div class="grid">
+<div>
+<ul>
+<li>Анализ рентгеновских снимков</li>
+<li>Обнаружение рака кожи по фото</li>
+<li>Чтение МРТ и гистологических препаратов</li>
+<li>В ряде задач — <span class="accent">превосходит врачей</span></li>
+</ul>
+</div>
+<div class="demo-box">
+<div class="label">важно</div>
+<p>ИИ — не замена врачу, а «вторая пара глаз». Подсвечивает подозрительные участки, ускоряет диагностику.</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 14: Autopilot + Photos -->
+<div class="slide">
+<h2>Применение: автопилот и поиск</h2>
+<div class="grid">
+<div class="card">
+<h3>Автопилот</h3>
+<p>Камеры анализируют дорогу <span class="accent">десятки раз в секунду</span></p>
+<p>Пешеходы, машины, знаки, разметка</p>
+</div>
+<div class="card">
+<h3>Google Photos</h3>
+<p>Поиск «закат на пляже» — без единого тега</p>
+<p>CNN проанализировала <span class="highlight">каждое фото</span> и создала визуальный индекс</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 15: Transfer learning -->
+<div class="slide">
+<h2>Transfer Learning</h2>
+<p>«Стоя на плечах гигантов»</p>
+<div class="demo-box">
+<div class="label">идея</div>
+<p>Кто-то потратил <span class="accent">миллионы долларов</span> и месяцы, обучив ResNet на миллионах изображений. Ранние слои уже умеют находить края и формы.</p>
+<p>Вы берёте предобученную модель, «замораживаете» ранние слои и <span class="highlight">дообучаете только последние</span> под свою задачу.</p>
+</div>
+<div class="formula">
+Вместо месяцев → часы · Вместо млн изображений → тысячи · Вместо кластера GPU → одна карта
+</div>
+</div>
+
+<!-- Slide 16: Demo -->
+<div class="slide">
+<h2>Демонстрация</h2>
+<div class="demo-box">
+<div class="label">вживую</div>
+<h3>Что «видит» CNN</h3>
+<ul>
+<li><span class="highlight">Фильтры 1 слоя</span> — края, линии, цвета</li>
+<li><span class="highlight">Глубокие слои</span> — лица, текстуры, объекты</li>
+<li><span class="highlight">Grad-CAM</span> — тепловая карта: на что сеть смотрела при решении</li>
+</ul>
+</div>
+</div>
+
+<!-- Slide 17: Key ideas -->
+<div class="slide">
+<h2>Ключевые идеи</h2>
+<ul>
+<li>Изображение = массив чисел (RGB, пиксели)</li>
+<li><span class="highlight">Свёртка</span> — фильтр скользит по картинке, ищет узоры</li>
+<li><span class="highlight">Иерархия</span>: края → формы → текстуры → объекты</li>
+<li><span class="highlight">Пулинг</span> — сжатие данных с сохранением сути</li>
+<li><span class="highlight">Transfer learning</span> — не обучаем с нуля</li>
+<li>CNN уже повсюду: лица, медицина, автопилот, поиск фото</li>
+</ul>
+</div>
+
+<!-- Slide 18: Homework -->
+<div class="slide">
+<h2>Домашнее задание</h2>
+<div class="card">
+<h3>Основное</h3>
+<p>Откройте Google Photos. Поищите «собака», «закат», «море». Подумайте: какие признаки CNN использует для поиска?</p>
+</div>
+<div class="card" style="margin-top:16px">
+<h3>Дополнительное</h3>
+<p>Найдите «CNN feature visualization» или «Grad-CAM demo» — посмотрите, что видят разные слои</p>
+</div>
+<p class="bottom-note">Следующая лекция: Как компьютер понимает текст — токенизация, Word2Vec, embeddings</p>
+</div>
+
+<div class="nav">
+<button onclick="go(-1)">← Назад</button>
+<button onclick="go(1)">Далее →</button>
+</div>
+
+<script>
+let cur=0,slides=document.querySelectorAll('.slide'),total=slides.length;
+function show(n){slides[cur].classList.remove('active');cur=Math.max(0,Math.min(total-1,n));slides[cur].classList.add('active');document.getElementById('progress').style.width=((cur+1)/total*100)+'%';document.getElementById('counter').textContent=(cur+1)+' / '+total}
+function go(d){show(cur+d)}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')go(1);if(e.key==='ArrowLeft')go(-1)});
+let tx=0;document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX});document.addEventListener('touchend',e=>{let dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)go(dx<0?1:-1)});
+show(0);
+</script>
+</body>
+</html>
