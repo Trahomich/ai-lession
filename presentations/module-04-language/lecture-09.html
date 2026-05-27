@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 9. Как компьютер понимает текст</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0a;--surface:#141414;--surface2:#1a1a1a;--text:#e5e5e5;--text2:#a3a3a3;--accent:#3b82f6;--accent2:#60a5fa;--border:#262626;--green:#22c55e;--red:#ef4444;--yellow:#eab308}
+html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+.slide{display:none;height:100vh;padding:80px 120px;position:relative}
+.slide.active{display:flex;flex-direction:column;justify-content:center}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:100;transition:width .3s}
+.nav-info{position:fixed;bottom:30px;right:40px;color:var(--text2);font-size:13px;z-index:100}
+.nav-buttons{position:fixed;bottom:30px;left:40px;display:flex;gap:8px;z-index:100}
+.nav-buttons button{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:40px;height:40px;border-radius:8px;cursor:pointer;font-size:16px;transition:all .2s}
+.nav-buttons button:hover{background:var(--border);color:var(--text)}
+h1{font-size:56px;font-weight:700;line-height:1.1;margin-bottom:20px;letter-spacing:-1px}
+h2{font-size:38px;font-weight:600;margin-bottom:24px;color:var(--accent2)}
+h3{font-size:24px;font-weight:500;margin-bottom:16px;color:var(--text)}
+.subtitle{font-size:20px;color:var(--text2);margin-bottom:8px}
+.meta{font-size:16px;color:var(--text2);margin-top:16px}
+p{font-size:20px;line-height:1.7;color:var(--text2);max-width:800px}
+.highlight{color:var(--accent2);font-weight:500}
+.tag{display:inline-block;background:var(--accent);color:white;padding:4px 12px;border-radius:20px;font-size:14px;font-weight:500;margin-right:8px}
+.example-box{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px;margin:16px 0;font-size:18px;line-height:1.7}
+.example-box .label{color:var(--accent2);font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.token{background:var(--surface);border:1px solid var(--accent);color:var(--accent2);padding:4px 10px;border-radius:6px;margin:2px;display:inline-block;font-size:16px;font-family:'Courier New',monospace}
+.arrow{color:var(--text2);font-size:20px;margin:0 8px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:20px}
+.col-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+.col-box h3{color:var(--accent2);font-size:20px;margin-bottom:12px}
+.col-box p{font-size:17px;line-height:1.6}
+.number{font-size:72px;font-weight:700;color:var(--accent);line-height:1}
+.number-label{font-size:18px;color:var(--text2);margin-top:8px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card h3{font-size:18px;margin-bottom:8px}
+.card p{font-size:15px;line-height:1.5}
+.analogy{font-size:28px;font-family:'Courier New',monospace;color:var(--accent2);margin:12px 0}
+.analogy .op{color:var(--yellow)}
+.analogy .result{color:var(--green)}
+.quote{border-left:3px solid var(--accent);padding-left:24px;font-size:22px;color:var(--text2);font-style:italic;margin:20px 0}
+.vs{display:flex;align-items:center;gap:30px;margin:20px 0}
+.vs-box{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+.vs-label{font-size:14px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.vs-text{font-size:20px;font-weight:500}
+.bad{color:var(--red)}
+.good{color:var(--green)}
+.key-point{background:var(--surface);border-left:3px solid var(--accent);padding:16px 20px;margin:12px 0;border-radius:0 8px 8px 0}
+.key-point p{font-size:18px;color:var(--text)}
+.hw-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;margin:8px 0;font-size:17px;color:var(--text2)}
+.section-tag{position:absolute;top:40px;left:120px;font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:2px}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="nav-info" id="navInfo"></div>
+<div class="nav-buttons">
+<button onclick="prev()">&#8592;</button>
+<button onclick="next()">&#8594;</button>
+</div>
+
+<!-- Slide 1: Title -->
+<div class="slide active">
+<div class="subtitle">Модуль 4. Язык и текст</div>
+<h1>Как компьютер<br>понимает текст</h1>
+<p>Токены, embeddings и почему порядок слов имеет значение</p>
+<div class="meta">Лекция 9 из 16</div>
+</div>
+
+<!-- Slide 2: Agenda -->
+<div class="slide">
+<div class="section-tag">План лекции</div>
+<h2>Сегодня разберём</h2>
+<div class="grid-3">
+<div class="card">
+<h3>01. Токенизация</h3>
+<p>Текст → кусочки. Почему токен ≠ слово и как BPE разбивает слова</p>
+</div>
+<div class="card">
+<h3>02. Embeddings</h3>
+<p>Слова → числа со смыслом. Word2Vec и магия аналогий</p>
+</div>
+<div class="card">
+<h3>03. Порядок слов</h3>
+<p>Почему bag of words не работает и что нужно вместо него</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 3: Problem -->
+<div class="slide">
+<div class="section-tag">Проблема</div>
+<h2>Компьютер понимает только числа</h2>
+<p>Текст для компьютера — просто набор символов без смысла.</p>
+<div class="example-box" style="margin-top:30px">
+<div class="label">Вопрос</div>
+<p>Как превратить <span class="highlight">«кошка сидит на коврике»</span> в числа, которые сохраняют смысл?</p>
+</div>
+<div class="key-point" style="margin-top:20px">
+<p>Без ответа на этот вопрос не было бы ни ChatGPT, ни переводчиков, ни голосовых помощников.</p>
+</div>
+</div>
+
+<!-- Slide 4: Tokens -->
+<div class="slide">
+<div class="section-tag">Секция 1. Токенизация</div>
+<h2>Токен — не всегда слово</h2>
+<div class="example-box">
+<div class="label">Примеры разбиения</div>
+<div style="margin:8px 0">«I love cats» → <span class="token">I</span> <span class="token"> love</span> <span class="token"> cats</span> — <span class="good">3 токена = 3 слова</span></div>
+<div style="margin:8px 0">«Невероятный» → <span class="token">Не</span> <span class="token">вероят</span> <span class="token">ный</span> — <span class="bad">3 токена, 1 слово</span></div>
+<div style="margin:8px 0">«Достопримечательность» → <span class="token">Дост</span> <span class="token">опре</span> <span class="token">дел</span> <span class="token">енности</span> — <span class="bad">4 токена, 1 слово</span></div>
+</div>
+<p style="margin-top:16px">Частые слова = один токен. Редкие и длинные = разбиваются на подслова.</p>
+</div>
+
+<!-- Slide 5: BPE -->
+<div class="slide">
+<div class="section-tag">Секция 1. Токенизация</div>
+<h2>BPE — Byte Pair Encoding</h2>
+<p style="margin-bottom:20px">Самый популярный алгоритм токенизации:</p>
+<div class="example-box">
+<div style="margin:8px 0"><span class="highlight">1.</span> Начинаем с символов: «к», «о», «т»</div>
+<div style="margin:8px 0"><span class="highlight">2.</span> Находим самую частую пару: «к», «о» → «ко»</div>
+<div style="margin:8px 0"><span class="highlight">3.</span> Добавляем «ко» в словарь</div>
+<div style="margin:8px 0"><span class="highlight">4.</span> Повторяем, пока словарь не наберёт нужный размер</div>
+</div>
+<div class="key-point">
+<p>GPT-4: словарь ~100 000 токенов. Из них можно «собрать» любой текст.</p>
+</div>
+</div>
+
+<!-- Slide 6: Russian vs English -->
+<div class="slide">
+<div class="section-tag">Секция 1. Токенизация</div>
+<h2>Русский vs Английский</h2>
+<div class="two-col">
+<div class="col-box">
+<h3>🇷🇺 Русский</h3>
+<p>«Искусственный интеллект меняет мир»</p>
+<div style="margin-top:12px">
+<span class="token">Искус</span><span class="token">ствен</span><span class="token">ный</span><span class="token"> интеллект</span><span class="token"> меня</span><span class="token">ет</span><span class="token"> мир</span>
+</div>
+<p style="margin-top:8px;color:var(--red)">7 токенов</p>
+</div>
+<div class="col-box">
+<h3>🇬🇧 English</h3>
+<p>«Artificial intelligence changes the world»</p>
+<div style="margin-top:12px">
+<span class="token">Art</span><span class="token">ificial</span><span class="token"> intelligence</span><span class="token"> changes</span><span class="token"> the</span><span class="token"> world</span>
+</div>
+<p style="margin-top:8px;color:var(--green)">6 токенов</p>
+</div>
+</div>
+<p style="margin-top:16px">Русский текст обычно даёт <span class="highlight">больше токенов</span> — слова длиннее, морфология сложнее. Для ChatGPT русский текст «дороже».</p>
+</div>
+
+<!-- Slide 7: One-hot -->
+<div class="slide">
+<div class="section-tag">Секция 2. Embeddings</div>
+<h2>Проблема: как представить слова?</h2>
+<p>Просто пронумеровать? «кот» = 142, «кошка» = 893?</p>
+<div class="example-box" style="margin-top:16px">
+<div class="label">One-hot encoding</div>
+<p>«кот» → [0, 0, ..., 1, ..., 0, 0] — единица на позиции 142</p>
+<p>«кошка» → [0, 0, ..., 0, 1, ..., 0] — единица на позиции 893</p>
+</div>
+<div style="margin-top:16px">
+<p class="bad">✗ Все слова одинаково «далеки» друг от друга</p>
+<p class="bad">✗ Вектор из 100 000 чисел — для одного слова</p>
+<p class="bad">✗ Не масштабируется</p>
+</div>
+</div>
+
+<!-- Slide 8: Word2Vec -->
+<div class="slide">
+<div class="section-tag">Секция 2. Embeddings</div>
+<h2>Word2Vec — прорыв 2013</h2>
+<div class="quote">«Слово характеризуется его окружением»</div>
+<p style="margin-top:16px">Каждое слово → компактный вектор из 100-300 чисел. Слова в похожем контексте = близкие вектора.</p>
+<div class="two-col" style="margin-top:20px">
+<div class="col-box">
+<h3>Как обучается</h3>
+<p>1. Берём миллиарды слов текста<br>2. Для каждого слова смотрим соседей<br>3. Корректируем вектор, чтобы предсказывать соседей<br>4. После миллионов итераций — вектора отражают смысл</p>
+</div>
+<div class="col-box">
+<h3>Результат</h3>
+<p>Животные рядом: кот, собака, хомяк<br>Страны рядом: Франция, Россия, Япония<br>Глаголы рядом: бежать, идти, ползти</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 9: Analogies -->
+<div class="slide">
+<div class="section-tag">Секция 2. Embeddings</div>
+<h2>Магия аналогий</h2>
+<p>Вектора поддерживают арифметику смысла:</p>
+<div style="margin-top:24px">
+<div class="analogy"><span class="highlight">король</span> <span class="op">−</span> мужчина <span class="op">+</span> женщина <span class="op">≈</span> <span class="result">королева</span></div>
+<div class="analogy"><span class="highlight">Париж</span> <span class="op">−</span> Франция <span class="op">+</span> Россия <span class="op">≈</span> <span class="result">Москва</span></div>
+<div class="analogy"><span class="highlight">врач</span> <span class="op">−</span> женщина <span class="op">+</span> мужчина <span class="op">≈</span> <span class="result">??? (предсказание модели)</span></div>
+</div>
+<div class="key-point" style="margin-top:20px">
+<p>Это не запрограммировано — модель сама «открыла» отношения, анализируя тексты.</p>
+</div>
+</div>
+
+<!-- Slide 10: t-SNE -->
+<div class="slide">
+<div class="section-tag">Секция 2. Embeddings</div>
+<h2>Визуализация: t-SNE</h2>
+<p>Сжимаем 300 измерений в 2 для графика:</p>
+<div class="example-box" style="margin-top:20px">
+<div style="display:flex;gap:20px;flex-wrap:wrap">
+<div style="background:var(--surface);padding:16px;border-radius:8px;flex:1;min-width:200px">
+<div style="color:var(--accent2);font-weight:600;margin-bottom:8px">🐾 Животные</div>
+<p style="font-size:15px">кот → собака → хомяк → попугай</p>
+</div>
+<div style="background:var(--surface);padding:16px;border-radius:8px;flex:1;min-width:200px">
+<div style="color:var(--green);font-weight:600;margin-bottom:8px">🌍 Страны</div>
+<p style="font-size:15px">Франция → Россия → Япония → Бразилия</p>
+</div>
+<div style="background:var(--surface);padding:16px;border-radius:8px;flex:1;min-width:200px">
+<div style="color:var(--yellow);font-weight:600;margin-bottom:8px">🏃 Движение</div>
+<p style="font-size:15px">бежать → идти → ползти → лететь</p>
+</div>
+</div>
+</div>
+<p style="margin-top:16px">Похожие слова — рядом. Разные — далеко. Это и есть «понимание» для компьютера.</p>
+</div>
+
+<!-- Slide 11: Word2Vec limitations -->
+<div class="slide">
+<div class="section-tag">Секция 2. Embeddings</div>
+<h2>Ограничения Word2Vec</h2>
+<div class="grid-3" style="margin-top:20px">
+<div class="card" style="border-color:var(--red)">
+<h3 class="bad">Одно слово = один вектор</h3>
+<p>«Банк» (финансовый) и «банк» (река) — одинаковый вектор. Контекст не учитывается.</p>
+</div>
+<div class="card" style="border-color:var(--yellow)">
+<h3 style="color:var(--yellow)">Статический</h3>
+<p>После обучения вектора фиксированы. Не адаптируются к контексту предложения.</p>
+</div>
+<div class="card" style="border-color:var(--accent)">
+<h3 class="highlight">Решение — впереди</h3>
+<p>Трансформеры и BERT решат эту проблему — контекстные embeddings. Лекция 10-11.</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 12: Order matters -->
+<div class="slide">
+<div class="section-tag">Секция 3. Порядок слов</div>
+<h2>Порядок слов имеет значение</h2>
+<div class="vs" style="margin-top:24px">
+<div class="vs-box">
+<div class="vs-label">Предложение 1</div>
+<div class="vs-text">«Собака кусает человека»</div>
+</div>
+<div style="font-size:32px;color:var(--text2)">≠</div>
+<div class="vs-box">
+<div class="vs-label">Предложение 2</div>
+<div class="vs-text">«Человек кусает собаку»</div>
+</div>
+</div>
+<p style="margin-top:16px">Те же три слова. Тот же «мешок». Абсолютно разный смысл.</p>
+<div class="example-box" style="margin-top:16px">
+<div class="label">Ещё пример</div>
+<p>«Я <span class="bad">не</span> сказал, что он украл деньги»</p>
+<p>«Я сказал, что он <span class="bad">не</span> украл деньги»</p>
+<p style="margin-top:8px;font-size:16px">Разница в одно слово — разница между обвинением и защитой.</p>
+</div>
+</div>
+
+<!-- Slide 13: Bag of Words -->
+<div class="slide">
+<div class="section-tag">Секция 3. Порядок слов</div>
+<h2>Bag of Words — плохо</h2>
+<div class="example-box">
+<div class="label">Мешок слов теряет порядок</div>
+<div style="margin:8px 0">«кот съел рыбу» → {кот:1, съел:1, рыба:1}</div>
+<div style="margin:8px 0">«рыба съела кота» → {рыба:1, съел:1, кот:1}</div>
+<p style="margin-top:12px;color:var(--red)">Для компьютера — одно и то же!</p>
+</div>
+<div style="margin-top:16px">
+<p class="bad">✗ Порядок теряется полностью</p>
+<p class="bad">✗ Длинные зависимости не ловятся</p>
+<p class="bad">✗ n-граммы — частичное решение, комбинаторный взрыв</p>
+</div>
+</div>
+
+<!-- Slide 14: What we need -->
+<div class="slide">
+<div class="section-tag">Секция 3. Порядок слов</div>
+<h2>Что нам нужно?</h2>
+<div style="margin-top:20px">
+<div class="key-point">
+<p><span class="good">✓</span> Знает «смысл» каждого слова — <span class="highlight">Word2Vec ✓</span></p>
+</div>
+<div class="key-point">
+<p><span class="good">✓</span> Учитывает порядок слов — <span class="bad">bag of words ✗, n-граммы ~</span></p>
+</div>
+<div class="key-point">
+<p><span class="good">✓</span> Учитывает контекст слова в предложении — <span class="bad">пока нет ✗</span></p>
+</div>
+<div class="key-point">
+<p><span class="good">✓</span> Обрабатывает тексты любой длины — <span class="bad">пока нет ✗</span></p>
+</div>
+</div>
+<div class="example-box" style="margin-top:24px;background:var(--surface);border-color:var(--accent)">
+<div class="label" style="color:var(--green)">Ответ</div>
+<p style="color:var(--text)">Этот метод — <span class="highlight">трансформер</span>. Следующая лекция.</p>
+</div>
+</div>
+
+<!-- Slide 15: Summary -->
+<div class="slide">
+<div class="section-tag">Итоги</div>
+<h2>Что мы узнали</h2>
+<div class="grid-3" style="margin-top:20px">
+<div class="card">
+<h3>🔤 Токенизация</h3>
+<p>Текст → токены. Токен ≠ слово. BPE — самый популярный алгоритм.</p>
+</div>
+<div class="card">
+<h3>📊 Embeddings</h3>
+<p>Слова → вектора из 100-300 чисел. Похожие слова = близкие точки.</p>
+</div>
+<div class="card">
+<h3>📐 Аналогии</h3>
+<p>король − мужчина + женщина ≈ королева. Модель сама выучила отношения.</p>
+</div>
+<div class="card">
+<h3>📝 Порядок</h3>
+<p>Bag of words теряет порядок. n-граммы — частичное решение.</p>
+</div>
+<div class="card">
+<h3>🎯 Контекст</h3>
+<p>«Банк» ≠ «банк». Word2Vec не различает. Нужен трансформер.</p>
+</div>
+<div class="card">
+<h3>➡️ Далее</h3>
+<p>Лекция 10: трансформер — архитектура, изменившая всё.</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 16: Homework -->
+<div class="slide">
+<div class="section-tag">Домашнее задание</div>
+<h2>Практика</h2>
+<div class="hw-item">
+<span class="highlight">1.</span> Зайти на tokenizer.openai.com, ввести 3 предложения на русском и английском, сравнить количество токенов
+</div>
+<div class="hw-item">
+<span class="highlight">2.</span> Придумать свою аналогию: «программист − компьютер + художник = ?» — и объяснить почему
+</div>
+<div class="example-box" style="margin-top:24px;border-color:var(--accent)">
+<div class="label">Анонс</div>
+<p style="font-size:20px">Лекция 10: <span class="highlight">Трансформеры — архитектура, изменившая всё</span></p>
+<p style="font-size:16px;margin-top:8px">«Attention Is All You Need» — самая важная статья в современном ИИ</p>
+</div>
+</div>
+
+</div>
+
+<script>
+let current=0;
+const slides=document.querySelectorAll('.slide');
+const total=slides.length;
+function show(n){slides.forEach(s=>s.classList.remove('active'));slides[n].classList.add('active');document.getElementById('progress').style.width=((n+1)/total*100)+'%';document.getElementById('navInfo').textContent=(n+1)+' / '+total}
+function next(){if(current<total-1){current++;show(current)}}
+function prev(){if(current>0){current--;show(current)}}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next()}if(e.key==='ArrowLeft'){e.preventDefault();prev()}});
+let touchX;document.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX});document.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-touchX;if(d<-50)next();if(d>50)prev()});
+show(0);
+</script>
+</body>
+</html>
