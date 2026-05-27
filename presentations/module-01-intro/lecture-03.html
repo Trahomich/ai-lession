@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 3. Что такое алгоритм и программа</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0a0a0a;color:#e5e5e5;overflow:hidden;height:100vh}
+.progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,#6366f1,#8b5cf6);z-index:100;transition:width .3s}
+.deck{height:100vh;position:relative}
+.slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding:80px 120px;opacity:0;transform:translateX(40px);transition:all .5s cubic-bezier(.4,0,.2,1);pointer-events:none}
+.slide.active{opacity:1;transform:translateX(0);pointer-events:all}
+.slide.prev{opacity:0;transform:translateX(-40px)}
+h1{font-size:3.5rem;font-weight:700;line-height:1.1;margin-bottom:24px;background:linear-gradient(135deg,#fff 0%,#a5b4fc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+h2{font-size:2.2rem;font-weight:600;margin-bottom:32px;color:#c4b5fd}
+.subtitle{font-size:1.4rem;color:#737373;margin-bottom:16px;font-weight:300}
+.meta{font-size:1rem;color:#525252;margin-top:32px;font-weight:300}
+p,li{font-size:1.25rem;line-height:1.8;color:#d4d4d4}
+ul{list-style:none;padding:0}
+ul li::before{content:'→';color:#6366f1;margin-right:12px;font-weight:600}
+ul li{margin-bottom:12px;padding-left:0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.card{background:#161616;border:1px solid #262626;border-radius:12px;padding:32px}
+.card h3{font-size:1.1rem;color:#8b5cf6;margin-bottom:16px;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.highlight{color:#a5b4fc;font-weight:500}
+.accent{color:#6366f1;font-weight:600}
+.big-num{font-size:5rem;font-weight:700;color:#6366f1;line-height:1}
+.badge{display:inline-block;background:rgba(99,102,241,.15);color:#a5b4fc;padding:4px 12px;border-radius:6px;font-size:.85rem;font-weight:500;margin-bottom:16px}
+pre{background:#161616;border:1px solid #262626;border-radius:8px;padding:20px 24px;font-family:'JetBrains Mono',monospace;font-size:1rem;line-height:1.7;color:#a5b4fc;overflow-x:auto;margin:16px 0}
+.comment{color:#525252;font-style:italic}
+table{width:100%;border-collapse:collapse;margin:20px 0}
+th{text-align:left;color:#8b5cf6;font-weight:500;padding:12px 16px;border-bottom:1px solid #262626;font-size:.95rem;text-transform:uppercase;letter-spacing:1px}
+td{padding:12px 16px;border-bottom:1px solid #1a1a1a;font-size:1.05rem}
+.quote{font-size:1.6rem;font-style:italic;color:#a5b4fc;line-height:1.5;border-left:3px solid #6366f1;padding-left:24px}
+.demo-box{background:#161616;border:1px solid #6366f1;border-radius:12px;padding:32px;text-align:center}
+.demo-box .icon{font-size:3rem;margin-bottom:16px}
+.vs{display:flex;align-items:center;justify-content:center;gap:40px;margin:20px 0}
+.vs-box{flex:1;background:#161616;border:1px solid #262626;border-radius:12px;padding:24px;text-align:center}
+.vs-box h3{color:#8b5cf6;margin-bottom:8px;font-size:1rem;text-transform:uppercase;letter-spacing:1px}
+.vs-label{font-size:2rem;font-weight:700;color:#6366f1}
+.nav{position:fixed;bottom:32px;right:32px;display:flex;gap:8px;z-index:50}
+.nav button{width:44px;height:44px;border-radius:10px;border:1px solid #262626;background:#161616;color:#e5e5e5;cursor:pointer;font-size:1.1rem;transition:all .2s}
+.nav button:hover{background:#262626;border-color:#6366f1}
+.slide-num{position:fixed;bottom:38px;left:120px;color:#525252;font-size:.9rem;font-weight:300}
+@media(max-width:768px){.slide{padding:40px 24px}h1{font-size:2rem}h2{font-size:1.5rem}p,li{font-size:1rem}.two-col{grid-template-columns:1fr;gap:24px}pre{font-size:.8rem}.nav{bottom:16px;right:16px}.slide-num{left:24px;bottom:20px}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+<!-- Slide 1: Title -->
+<div class="slide active">
+<div class="badge">Модуль 2 · Как машины «учатся»</div>
+<h1>Что такое алгоритм и программа</h1>
+<p class="subtitle">Почему обычного программирования оказалось недостаточно</p>
+<p class="meta">Лекция 3 из 16 · 45–60 минут</p>
+</div>
+
+<!-- Slide 2: Questions -->
+<div class="slide">
+<h2>Ключевые вопросы</h2>
+<ul>
+<li>Что такое алгоритм и как он связан с программой?</li>
+<li>Из чего состоит любая программа в мире?</li>
+<li>Почему мы не можем просто «запрограммировать» умное поведение?</li>
+<li>Чем отличается обычная программа от ИИ?</li>
+</ul>
+</div>
+
+<!-- Slide 3: Algorithm in life -->
+<div class="slide">
+<h2>Алгоритм — это не только про компьютеры</h2>
+<div class="two-col">
+<div class="card">
+<h3>Рецепт борща</h3>
+<ol style="list-style:decimal;padding-left:20px">
+<li>Поставь кастрюлю воды на огонь</li>
+<li>Нарежь свёклу кубиками</li>
+<li>Забрось в кипящую воду</li>
+<li>Вари 40 минут</li>
+<li>Подавай со сметаной</li>
+</ol>
+</div>
+<div class="card">
+<h3>Инструкция для шкафа</h3>
+<p style="color:#737373;font-size:1.1rem">Шаг 1: Прикрепи боковую панель А к основанию Б<br><br>Шаг 2: Вставь 4 винта в отверстия<br><br>Шаг 3: Затяни гайками<br><br>...</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 4: Properties -->
+<div class="slide">
+<h2>Три свойства алгоритма</h2>
+<div class="two-col">
+<div>
+<div class="card" style="margin-bottom:20px">
+<h3>1. Конечность</h3>
+<p>Алгоритм когда-нибудь закончится. Борщ сварится, шкаф соберётся.</p>
+</div>
+<div class="card" style="margin-bottom:20px">
+<h3>2. Определённость</h3>
+<p>Каждый шаг чёткий. Не «примерно туда», а «вставь 4 винта».</p>
+</div>
+<div class="card">
+<h3>3. Вход и выход</h3>
+<p>Есть исходные данные (продукты, детали) и есть результат (борщ, шкаф).</p>
+</div>
+</div>
+<div style="display:flex;align-items:center;justify-content:center">
+<div class="demo-box" style="width:100%">
+<div class="icon">🃏</div>
+<p style="font-size:1.1rem"><span class="accent">Сортировка колоды карт:</span></p>
+<p style="color:#737373;margin-top:12px;font-size:1rem">1. Возьми первую карту<br>2. Следующую — вставь в правильное место<br>3. Повторяй до конца</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Slide 5: Computer as executor -->
+<div class="slide">
+<h2>Компьютер — исполнитель алгоритмов</h2>
+<p style="margin-bottom:24px">Фундаментальное свойство: компьютер делает <span class="accent">ровно то, что ему сказали</span>.</p>
+<div class="two-col">
+<div class="card" style="border-color:#22c55e33">
+<h3 style="color:#22c55e">Сила</h3>
+<p>Никогда не ошибается в выполнении инструкций.<br>3 ложки соли — значит 3 ложки.</p>
+</div>
+<div class="card" style="border-color:#ef444433">
+<h3 style="color:#ef4444">Слабость</h3>
+<p>Не «догадается», если инструкция неправильная.<br>Вы имели в виду щепотки? Уже поздно.</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 6: Three building blocks -->
+<div class="slide">
+<h2>Из чего состоит ЛЮБАЯ программа</h2>
+<p style="margin-bottom:28px">Всё в программировании строится из <span class="accent">трёх кирпичиков</span>:</p>
+<div class="two-col">
+<div class="card" style="margin-bottom:16px">
+<h3>Следование</h3>
+<p>Делай одно за другим. Шаг 1 → Шаг 2 → Шаг 3.</p>
+</div>
+<div class="card" style="margin-bottom:16px">
+<h3>Ветвление (if/else)</h3>
+<p>Если условие верно — делай одно, иначе — другое.</p>
+</div>
+<div class="card">
+<h3>Цикл (while/for)</h3>
+<p>Повторяй, пока условие верно.</p>
+</div>
+<div style="display:flex;align-items:center;justify-content:center">
+<p class="quote" style="font-size:1.2rem">Операционная система, Google, видеоигры — всё это комбинация этих трёх конструкций.</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 7: Deterministic -->
+<div class="slide">
+<h2>Детерминированные программы</h2>
+<pre>Вход:  2 + 3
+Правило: сложить два числа
+Выход: 5</pre>
+<p style="margin-top:20px"><span class="highlight">Всегда. Каждый раз.</span> 2 + 3 = 5 — и завтра, и через год, на любом компьютере.</p>
+<p style="margin-top:16px;color:#737373">Это делает программы надёжными, предсказуемыми, воспроизводимыми.<br>Как инженерный мост — стоит, потому что рассчитан по формулам.</p>
+</div>
+
+<!-- Slide 8: Cat problem -->
+<div class="slide">
+<h2>А теперь — проблема</h2>
+<p style="margin-bottom:20px">Напишем программу для <span class="accent">распознавания кошек на фото</span>:</p>
+<pre>ЕСЛИ есть треугольные уши
+И   есть усы
+И   есть хвост
+И   есть четыре лапы
+И   глаза большие
+И   ... что ещё?
+ТО  это кошка</pre>
+<p style="margin-top:20px">Начинаем писать правила... и понимаем: <span class="highlight">это невозможно</span>.</p>
+</div>
+
+<!-- Slide 9: Cat paradox -->
+<div class="slide" style="justify-content:center">
+<p class="quote" style="font-size:1.8rem">Задачу «узнать кота» трёхлетний ребёнок решает за долю секунды.</p>
+<p class="quote" style="font-size:1.8rem;margin-top:20px">А для программы через if/else — это кошмар.</p>
+<p style="margin-top:40px;color:#737373;text-align:center">Ребёнок не использует правила. Он <span class="highlight">видел тысячи кошек</span> и научился распознавать их визуально. Он просто знает — без правил.</p>
+</div>
+
+<!-- Slide 10: Tasks impossible for rules -->
+<div class="slide">
+<h2>Где правила не работают</h2>
+<div class="two-col">
+<div class="card" style="margin-bottom:16px">
+<h3>🗣 Распознавание речи</h3>
+<p>Акцент, скорость, эмоции, простуда, шум — одни слова звучат тысячей способов.</p>
+</div>
+<div class="card" style="margin-bottom:16px">
+<h3>🌐 Перевод</h3>
+<p>Исключений больше, чем правил. Идиомы не переводятся дословно.</p>
+</div>
+<div class="card" style="margin-bottom:16px">
+<h3>🚗 Вождение</h3>
+<p>Пешеход, собака, мяч, дождь, ночь, ремонт — миллиарды ситуаций для if/else.</p>
+</div>
+<div class="card">
+<h3>🏥 Медицина</h3>
+<p>Симптомы пересекаются, каждый пациент уникален, аномалии — норма.</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 11: Paradigm shift -->
+<div class="slide">
+<h2>Переворот парадигмы</h2>
+<div class="vs">
+<div class="vs-box">
+<h3>Классическое программирование</h3>
+<p style="font-size:1.3rem;margin:12px 0"><span class="accent">Правила</span> + Данные → <span class="accent">Ответы</span></p>
+<p style="color:#737373">Человек пишет правила</p>
+</div>
+<div class="vs-label">→</div>
+<div class="vs-box" style="border-color:#6366f1">
+<h3>Машинное обучение</h3>
+<p style="font-size:1.3rem;margin:12px 0"><span class="accent">Данные</span> + Ответы → <span class="accent">Правила</span></p>
+<p style="color:#737373">Компьютер находит правила</p>
+</div>
+</div>
+<p style="text-align:center;margin-top:24px;color:#737373">Вместо написания правил — показываем примеры. Много примеров.</p>
+</div>
+
+<!-- Slide 12: Demo -->
+<div class="slide">
+<h2>Демонстрация: программа «Время года»</h2>
+<pre>ЕСЛИ месяц = 12 ИЛИ 1 ИЛИ 2  → <span style="color:#60a5fa">Зима</span>
+ЕСЛИ месяц = 3 ИЛИ 4 ИЛИ 5   → <span style="color:#4ade80">Весна</span>
+ЕСЛИ месяц = 6 ИЛИ 7 ИЛИ 8   → <span style="color:#fbbf24">Лето</span>
+ЕСЛИ месяц = 9 ИЛИ 10 ИЛИ 11 → <span style="color:#f97316">Осень</span></pre>
+<p style="margin-top:20px">Работает? <span class="highlight">Да.</span> Для стандартных месяцев — идеально.</p>
+<p style="margin-top:12px;color:#737373">А теперь: Сочи, декабрь, +15°C, цветут магнолии → программа говорит «Зима».<br>Мурманск, июнь, +3°C, снег → программа говорит «Лето».</p>
+</div>
+
+<!-- Slide 13: Demo contrast -->
+<div class="slide">
+<h2>ИИ-подход к той же задаче</h2>
+<div class="card" style="max-width:700px">
+<p style="margin-bottom:16px"><span class="accent">Данные:</span> 100 000 записей</p>
+<pre style="background:#0a0a0a;border:none;padding:12px;font-size:.9rem">{ Сочи, декабрь, +15, "весна" }
+{ Мурманск, июнь, +3, "не лето" }
+{ Москва, апрель, +10, "весна" }
+...</pre>
+<p style="margin-top:16px"><span class="accent">Результат:</span> модель сама находит, что в Сочи в декабре при +15 — это скорее весна.</p>
+</div>
+<p style="margin-top:24px;color:#737373">Разница: вместо бесконечных if/else — данные → правила.</p>
+</div>
+
+<!-- Slide 14: Key insight -->
+<div class="slide" style="justify-content:center">
+<p class="quote" style="font-size:2rem;text-align:center">Для задач вроде «узнать кошку», «понять речь», «перевести текст» — правила написать невозможно.</p>
+<p class="quote" style="font-size:2rem;margin-top:24px;text-align:center">Выход: вместо правил — данные.</p>
+<p style="margin-top:40px;text-align:center;font-size:1.4rem;color:#6366f1;font-weight:600">Пусть компьютер сам найдёт закономерности.</p>
+</div>
+
+<!-- Slide 15: Summary -->
+<div class="slide">
+<h2>Итоги</h2>
+<ul>
+<li><span class="accent">Алгоритм</span> — чёткий, конечный набор шагов для решения задачи</li>
+<li><span class="accent">Любая программа</span> — это следование + ветвление + цикл</li>
+<li><span class="accent">Детерминированные программы</span> прекрасны для задач с чёткими правилами</li>
+<li>Мир сложнее правил — кошки, речь, перевод не поддаются if/else</li>
+<li><span class="accent">Выход:</span> вместо правил — данные. Это и есть машинное обучение</li>
+</ul>
+</div>
+
+<!-- Slide 16: Homework -->
+<div class="slide">
+<h2>Домашнее задание</h2>
+<div class="card" style="max-width:650px">
+<p style="font-size:1.2rem;margin-bottom:16px">Напишите алгоритм для задачи: <span class="accent">«Как перейти дорогу»</span></p>
+<p style="color:#737373">Пошагово, как для компьютера. На бумаге, не программный код.</p>
+<p style="margin-top:16px;color:#737373">А затем — найдите хотя бы <span class="highlight">одну ситуацию</span>, где ваш алгоритм сломается:</p>
+<ul style="margin-top:8px">
+<li>Ночью, нет светофора</li>
+<li>Ремонт дороги, знака не видно</li>
+<li>Слепой пешеход</li>
+<li>...</li>
+</ul>
+</div>
+<p class="meta">Анонс: Лекция 4 — Машинное обучение: идея без магии</p>
+</div>
+
+</div>
+
+<div class="slide-num" id="slideNum">1 / 16</div>
+<div class="nav">
+<button onclick="go(-1)">←</button>
+<button onclick="go(1)">→</button>
+</div>
+
+<script>
+const slides=document.querySelectorAll('.slide'),total=slides.length;
+let cur=0;
+function show(i){
+  slides.forEach((s,j)=>{s.classList.remove('active','prev');if(j<i)s.classList.add('prev')});
+  slides[i].classList.add('active');
+  document.getElementById('progress').style.width=((i+1)/total*100)+'%';
+  document.getElementById('slideNum').textContent=`${i+1} / ${total}`;
+}
+function go(d){cur=Math.max(0,Math.min(total-1,cur+d));show(cur)}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')go(1);if(e.key==='ArrowLeft')go(-1);if(e.key==='Home'){cur=0;show(0)}if(e.key==='End'){cur=total-1;show(total-1)}});
+let tx;document.addEventListener('touchstart',e=>tx=e.touches[0].clientX);
+document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)go(dx<0?1:-1)});
+</script>
+</body>
+</html>
