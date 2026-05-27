@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лекция 1 — Что такое интеллект и можно ли его создать искусственно?</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-canvas: #08090a;
+      --bg-panel: #0f1011;
+      --bg-surface: #191a1b;
+      --bg-hover: #28282c;
+      --text-primary: #f7f8f8;
+      --text-secondary: #d0d6e0;
+      --text-muted: #8a8f98;
+      --text-dim: #62666d;
+      --accent: #5e6ad2;
+      --accent-bright: #7170ff;
+      --accent-hover: #828fff;
+      --green: #10b981;
+      --border: rgba(255,255,255,0.08);
+      --border-subtle: rgba(255,255,255,0.05);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-canvas);
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .slide {
+      display: none;
+      height: 100vh;
+      padding: 80px 120px;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    /* Title slide */
+    .slide.title-slide {
+      align-items: center;
+      text-align: center;
+    }
+
+    .slide.title-slide .course-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent-bright);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .slide.title-slide h1 {
+      font-size: 56px;
+      font-weight: 500;
+      letter-spacing: -1.2px;
+      line-height: 1.1;
+      margin-bottom: 24px;
+    }
+
+    .slide.title-slide .subtitle {
+      font-size: 20px;
+      color: var(--text-muted);
+      font-weight: 400;
+      max-width: 600px;
+    }
+
+    /* Section title slide */
+    .slide.section-slide h2 {
+      font-size: 48px;
+      font-weight: 500;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+
+    .slide.section-slide .section-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--accent-bright);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    /* Content slide */
+    .slide.content-slide h2 {
+      font-size: 36px;
+      font-weight: 500;
+      letter-spacing: -0.7px;
+      margin-bottom: 40px;
+      line-height: 1.15;
+    }
+
+    .slide.content-slide ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .slide.content-slide li {
+      font-size: 22px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      padding-left: 28px;
+      position: relative;
+    }
+
+    .slide.content-slide li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    /* Two column layout */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      margin-top: 20px;
+    }
+
+    .col-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    .col-card h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .col-card p {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .col-card .highlight {
+      color: var(--accent-bright);
+      font-weight: 500;
+    }
+
+    /* Quote slide */
+    .slide.quote-slide {
+      align-items: center;
+      text-align: center;
+    }
+
+    .slide.quote-slide blockquote {
+      font-size: 40px;
+      font-weight: 400;
+      line-height: 1.4;
+      color: var(--text-primary);
+      max-width: 800px;
+      font-style: italic;
+    }
+
+    .slide.quote-slide cite {
+      display: block;
+      margin-top: 24px;
+      font-size: 16px;
+      color: var(--text-dim);
+      font-style: normal;
+    }
+
+    /* Key point */
+    .key-point {
+      background: rgba(94, 106, 210, 0.1);
+      border: 1px solid rgba(94, 106, 210, 0.3);
+      border-radius: 12px;
+      padding: 32px 40px;
+      margin-top: 40px;
+    }
+
+    .key-point .label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-bright);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .key-point p {
+      font-size: 22px;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    /* Types grid */
+    .types-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .type-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+    }
+
+    .type-card .type-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .type-card .type-status {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    .type-card .type-status.exists {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--green);
+    }
+
+    .type-card .type-status.no {
+      background: rgba(255,255,255,0.05);
+      color: var(--text-dim);
+    }
+
+    .type-card .type-desc {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .type-card .type-examples {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Demo slide */
+    .demo-box {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 40px;
+      margin-top: 20px;
+      max-width: 700px;
+    }
+
+    .demo-box .demo-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-bright);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .demo-box .demo-item {
+      margin-bottom: 20px;
+    }
+
+    .demo-box .demo-q {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .demo-box .demo-a {
+      font-size: 16px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .demo-box .demo-note {
+      font-size: 14px;
+      color: var(--text-dim);
+      font-style: italic;
+      margin-top: 4px;
+    }
+
+    /* Summary slide */
+    .summary-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .summary-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      font-size: 20px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .summary-num {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-bright);
+      background: rgba(94, 106, 210, 0.15);
+      min-width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    /* Homework slide */
+    .homework-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px 40px;
+      margin-top: 24px;
+    }
+
+    .homework-box h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .homework-box p {
+      font-size: 18px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .homework-box .hint {
+      margin-top: 16px;
+      font-size: 15px;
+      color: var(--text-dim);
+    }
+
+    /* Navigation */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 100;
+    }
+
+    .nav-bar .slide-counter {
+      font-size: 13px;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .nav-bar .nav-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s ease;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: var(--text-primary);
+    }
+
+    .nav-btn:active {
+      background: rgba(255,255,255,0.12);
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: var(--accent);
+      transition: width 0.3s ease;
+      z-index: 101;
+    }
+
+    /* Myths */
+    .myth-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .myth-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 20px;
+      color: var(--text-secondary);
+    }
+
+    .myth-icon {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+      min-width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .slide { padding: 40px 24px; }
+      .slide.title-slide h1 { font-size: 32px; }
+      .slide.section-slide h2 { font-size: 28px; }
+      .slide.content-slide h2 { font-size: 24px; }
+      .slide.content-slide li { font-size: 18px; }
+      .types-grid { grid-template-columns: 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress-bar" id="progress"></div>
+
+  <!-- Slide 1: Title -->
+  <div class="slide title-slide active" data-slide="1">
+    <div class="course-label">Курс: Искусственный интеллект — как это работает</div>
+    <h1>Что такое интеллект и можно ли его создать искусственно?</h1>
+    <p class="subtitle">Лекция 1 из 16</p>
+  </div>
+
+  <!-- Slide 2: What to expect -->
+  <div class="slide content-slide" data-slide="2">
+    <h2>Чего ожидать от курса</h2>
+    <div class="two-col">
+      <div class="col-card">
+        <h3>Что НЕ будет</h3>
+        <p>Программирования, сложной математики, хайпа и пустых обещаний</p>
+      </div>
+      <div class="col-card">
+        <h3>Что БУДЕТ</h3>
+        <p>Понимание принципов, живые примеры, демистификация ИИ, <span class="highlight">16 лекций от основ до будущего</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3: Section - Intelligence -->
+  <div class="slide section-slide" data-slide="3">
+    <div class="section-label">Секция 1</div>
+    <h2>Что такое интеллект?</h2>
+  </div>
+
+  <!-- Slide 4: Human intelligence -->
+  <div class="slide content-slide" data-slide="4">
+    <h2>Компоненты человеческого интеллекта</h2>
+    <ul>
+      <li>Память — хранить и вспоминать информацию</li>
+      <li>Обучение — делать выводы из опыта</li>
+      <li>Адаптация — применять знания в новых ситуациях</li>
+      <li>Рассуждение — логика, анализ, выводы</li>
+      <li>Творчество — создание нового, неочевидного</li>
+    </ul>
+  </div>
+
+  <!-- Slide 5: Turing test -->
+  <div class="slide quote-slide" data-slide="5">
+    <blockquote>«Если человек общается с собеседником через текст и не может определить, человек это или машина — можно ли сказать, что машина думает?»</blockquote>
+    <cite>Алан Тьюринг, 1950</cite>
+  </div>
+
+  <!-- Slide 6: Chinese Room -->
+  <div class="slide content-slide" data-slide="6">
+    <h2>Китайская комната Сёрла</h2>
+    <ul>
+      <li>Вы в комнате, не знаете китайского</li>
+      <li>Получаете иероглифы, следуете инструкции, отправляете ответ</li>
+      <li>Снаружи думают: «Он понимает китайский!»</li>
+      <li>Но вы просто следуете правилам — без понимания</li>
+    </ul>
+    <div class="key-point">
+      <div class="label">Ключевой вопрос</div>
+      <p>В чём разница между имитацией интеллекта и настоящим пониманием?</p>
+    </div>
+  </div>
+
+  <!-- Slide 7: Key thesis -->
+  <div class="slide quote-slide" data-slide="7">
+    <blockquote>Интеллект не требует сознания</blockquote>
+    <cite>Ключевой тезис курса</cite>
+  </div>
+
+  <!-- Slide 8: Myths -->
+  <div class="slide content-slide" data-slide="8">
+    <h2>Чем ИИ НЕ является</h2>
+    <div class="myth-list">
+      <div class="myth-item">
+        <div class="myth-icon">&#10005;</div>
+        <span>Терминатор — ИИ не «хочет» ничего, у него нет желаний</span>
+      </div>
+      <div class="myth-item">
+        <div class="myth-icon">&#10005;</div>
+        <span>Матрица — ИИ не испытывает эмоций</span>
+      </div>
+      <div class="myth-item">
+        <div class="myth-icon">&#10005;</div>
+        <span>«ИИ захватит мир» — нет собственной инициативы</span>
+      </div>
+      <div class="myth-item">
+        <div class="myth-icon">&#10005;</div>
+        <span>«ИИ осознает себя» — нет признаков самосознания</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 9: Types of AI -->
+  <div class="slide section-slide" data-slide="9">
+    <div class="section-label">Секция 2</div>
+    <h2>Три типа ИИ</h2>
+  </div>
+
+  <!-- Slide 10: Types grid -->
+  <div class="slide content-slide" data-slide="10">
+    <h2>Классификация ИИ</h2>
+    <div class="types-grid">
+      <div class="type-card">
+        <div class="type-name">Narrow AI</div>
+        <div class="type-status exists">Существует</div>
+        <div class="type-desc">Специализированный — эксперт в одной области, профан во всём остальном</div>
+        <div class="type-examples">Примеры: шахматы, спам-фильтр, автопилот, ChatGPT</div>
+      </div>
+      <div class="type-card">
+        <div class="type-name">General AI</div>
+        <div class="type-status no">Не существует</div>
+        <div class="type-desc">Универсальный — как человек, гибкий и разносторонний</div>
+        <div class="type-examples">Мы не знаем, как его создать</div>
+      </div>
+      <div class="type-card">
+        <div class="type-name">Super AI</div>
+        <div class="type-status no">Гипотеза</div>
+        <div class="type-desc">Превосходит человека во всех областях</div>
+        <div class="type-examples">Научная фантастика</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 11: All AI is Narrow -->
+  <div class="slide quote-slide" data-slide="11">
+    <blockquote>Всё, что вы видите сегодня — это Narrow AI. ChatGPT — тоже Narrow AI.</blockquote>
+  </div>
+
+  <!-- Slide 12: Demo -->
+  <div class="slide section-slide" data-slide="12">
+    <div class="section-label">Демонстрация</div>
+    <h2>ИИ в действии</h2>
+  </div>
+
+  <!-- Slide 13: Demo content -->
+  <div class="slide content-slide" data-slide="13">
+    <h2>Как «думает» ИИ</h2>
+    <div class="demo-box">
+      <div class="demo-label">Три вопроса ChatGPT</div>
+      <div class="demo-item">
+        <div class="demo-q">2 + 2 = ?</div>
+        <div class="demo-a">4</div>
+        <div class="demo-note">Не «считает» — видела миллионы примеров «2+2=4»</div>
+      </div>
+      <div class="demo-item">
+        <div class="demo-q">4827 x 391 = ?</div>
+        <div class="demo-a">Скорее всего ошибётся</div>
+        <div class="demo-note">Угадывает вероятное продолжение текста</div>
+      </div>
+      <div class="demo-item">
+        <div class="demo-q">Сочини стихотворение</div>
+        <div class="demo-a">Сгенерирует что-то похожее</div>
+        <div class="demo-note">Статистическое предсказание на основе тысяч стихов</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 14: Summary -->
+  <div class="slide section-slide" data-slide="14">
+    <div class="section-label">Итоги</div>
+    <h2>Что мы узнали</h2>
+  </div>
+
+  <!-- Slide 15: Summary list -->
+  <div class="slide content-slide" data-slide="15">
+    <h2>Лекция 1 — ключевые выводы</h2>
+    <div class="summary-list">
+      <div class="summary-item">
+        <div class="summary-num">1</div>
+        <span>Интеллект = память + обучение + адаптация + рассуждение</span>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num">2</div>
+        <span>ИИ имитирует интеллектуальное поведение, но не обязательно «понимает»</span>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num">3</div>
+        <span>Интеллект не требует сознания</span>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num">4</div>
+        <span>Всё, что существует сегодня — Narrow AI</span>
+      </div>
+      <div class="summary-item">
+        <div class="summary-num">5</div>
+        <span>General AI и Super AI — пока гипотетические концепции</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 16: Homework -->
+  <div class="slide content-slide" data-slide="16">
+    <h2>Домашнее задание</h2>
+    <div class="homework-box">
+      <h3>Найдите 3 примера ИИ в повседневной жизни</h3>
+      <p>Которые вы раньше не замечали или не воспринимали как ИИ</p>
+      <p class="hint">Подсказка: соцсети, интернет-магазины, навигаторы, голосовые помощники, камеры телефона, банковские приложения</p>
+    </div>
+    <div class="key-point">
+      <div class="label">Следующая лекция</div>
+      <p>История ИИ — от кибернетики 1940-х до ChatGPT</p>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav-bar">
+    <div class="slide-counter" id="counter">1 / 16</div>
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="prevSlide()">&#8592; Назад</button>
+      <button class="nav-btn" onclick="nextSlide()">Далее &#8594;</button>
+    </div>
+  </div>
+
+  <script>
+    let current = 1;
+    const total = document.querySelectorAll('.slide').length;
+
+    function showSlide(n) {
+      document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+      document.querySelector(`[data-slide="${n}"]`).classList.add('active');
+      document.getElementById('counter').textContent = `${n} / ${total}`;
+      document.getElementById('progress').style.width = `${(n / total) * 100}%`;
+    }
+
+    function nextSlide() {
+      if (current < total) { current++; showSlide(current); }
+    }
+
+    function prevSlide() {
+      if (current > 1) { current--; showSlide(current); }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+    });
+
+    // Touch support
+    let touchStart = 0;
+    document.addEventListener('touchstart', e => { touchStart = e.touches[0].clientX; });
+    document.addEventListener('touchend', e => {
+      const diff = touchStart - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); }
+    });
+
+    showSlide(1);
+  </script>
+</body>
+</html>
