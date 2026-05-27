@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 5 — Линейная регрессия и классификация</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:#0a0a0a;color:#e5e5e5;font-family:'Inter',sans-serif}
+.progress{position:fixed;top:0;left:0;height:2px;background:#8b5cf6;z-index:100;transition:width .3s}
+.slide{display:none;height:100vh;padding:8vh 10vw;flex-direction:column;justify-content:center}
+.slide.active{display:flex}
+.tag{font-size:.75rem;color:#8b5cf6;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2rem;font-weight:500}
+h1{font-size:3.5rem;font-weight:700;line-height:1.1;margin-bottom:1.5rem;background:linear-gradient(135deg,#e5e5e5,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+h2{font-size:2.5rem;font-weight:600;margin-bottom:1.5rem;color:#fff}
+h3{font-size:1.5rem;font-weight:500;margin-bottom:1rem;color:#d4d4d4}
+p,.li{font-size:1.25rem;line-height:1.8;color:#a3a3a3;max-width:70ch}
+.li{margin-bottom:.5rem;padding-left:1.5rem;position:relative}
+.li::before{content:'→';position:absolute;left:0;color:#8b5cf6}
+.highlight{color:#8b5cf6;font-weight:500}
+.formula{font-size:1.5rem;font-family:'Courier New',monospace;color:#fff;background:rgba(139,92,246,.1);padding:1.5rem 2rem;border-radius:8px;border-left:3px solid #8b5cf6;margin:1.5rem 0;display:inline-block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-top:1.5rem}
+.card{background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.15);border-radius:12px;padding:1.5rem}
+.card h3{color:#8b5cf6;margin-bottom:.5rem;font-size:1.1rem}
+.card p{font-size:1rem}
+.bad{color:#ef4444}.good{color:#22c55e}
+.demo{background:rgba(139,92,246,.05);border:1px dashed rgba(139,92,246,.3);border-radius:12px;padding:2rem;margin-top:1.5rem}
+.demo h3{color:#8b5cf6}
+.nav{position:fixed;bottom:2rem;right:2rem;display:flex;gap:.5rem;z-index:100}
+.nav button{background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:#e5e5e5;padding:.5rem 1rem;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-size:.9rem;transition:all .2s}
+.nav button:hover{background:rgba(139,92,246,.3)}
+.counter{position:fixed;bottom:2rem;left:2rem;font-size:.85rem;color:#525252;z-index:100}
+.quote{font-size:1.8rem;font-style:italic;color:#8b5cf6;text-align:center;max-width:50ch;line-height:1.6}
+table{border-collapse:collapse;margin:1rem 0;font-size:1.1rem;width:100%}
+th{background:rgba(139,92,246,.15);color:#8b5cf6;padding:.75rem 1rem;text-align:left;border-bottom:2px solid rgba(139,92,246,.3)}
+td{padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.05);color:#a3a3a3}
+.visual{font-size:1.3rem;color:#d4d4d4;text-align:center;margin:1rem 0;line-height:2;font-family:monospace}
+.big{font-size:3rem;font-weight:700;text-align:center;margin:1rem 0}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="slide active">
+<div class="tag">Модуль 2 · Лекция 5</div>
+<h1>Линейная регрессия и классификация</h1>
+<p>Первые модели машинного обучения — от прямой линии до спам-фильтра</p>
+</div>
+
+<div class="slide">
+<div class="tag">Разогрев</div>
+<h2>Задача про квартиру</h2>
+<p>Площадь 50 м². Сколько она стоит?</p>
+<div class="grid">
+<div class="card">
+<h3>Данные с сайта</h3>
+<p>30 м² → 3 млн<br>45 м² → 4.2 млн<br>60 м² → 5.8 млн<br>80 м² → 7.5 млн</p>
+</div>
+<div class="card">
+<h3>Интуиция</h3>
+<p>Наносим точки на график — они выстраиваются почти в прямую линию</p>
+<p class="highlight">Пять минут с линейкой — и вы можете предсказать цену</p>
+</div>
+</div>
+<p style="margin-top:1.5rem">Поздравляю. Вы только что применили <span class="highlight">линейную регрессию</span>.</p>
+</div>
+
+<div class="slide">
+<div class="tag">Линейная регрессия</div>
+<h2>Формула прямой</h2>
+<div class="formula">y = w × x + b</div>
+<div class="grid">
+<div class="card">
+<h3>w — вес (наклон)</h3>
+<p>На сколько растёт y при росте x на 1. Если w = 100000, каждый м² добавляет 100 тыс.</p>
+</div>
+<div class="card">
+<h3>b — смещение (пересечение)</h3>
+<p>Базовая цена при нулевой площади. Можно думать как цена земли и документов.</p>
+</div>
+</div>
+<p style="margin-top:1.5rem">Всего <span class="highlight">два параметра</span>. Наша задача — найти лучшие w и b.</p>
+</div>
+
+<div class="slide">
+<div class="tag">Линейная регрессия</div>
+<h2>Множественная регрессия</h2>
+<p>Что если на цену влияет не только площадь?</p>
+<div class="formula">y = w₁×площадь + w₂×этаж + w₃×метро + b</div>
+<p>Каждый признак получает свой вес. Вес показывает <span class="highlight">важность признака</span>.</p>
+<div class="card" style="margin-top:1.5rem">
+<h3>Где используется</h3>
+<p class="li">Прогноз продаж по рекламному бюджету</p>
+<p class="li">Оценка акций по финансовым показателям</p>
+<p class="li">Страховые премии по возрасту и стажу</p>
+<p class="li">Успеваемость по часам учёбы</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="tag">Градиентный спуск</div>
+<h2>Как модель учится</h2>
+<p>Проблема: как найти лучшие w и b, если параметров тысячи?</p>
+<div class="demo">
+<h3>Аналогия с горой</h3>
+<p>Вы стоите на горе с завязанными глазами. Цель — самая низкая точка долины.</p>
+<p style="margin-top:1rem">Чувствуете: склон идёт вниз — шагаете туда. Ещё раз — и ещё. Шаг за шагом, вы спускаетесь.</p>
+<p class="highlight" style="margin-top:1rem">Это и есть градиентный спуск.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="tag">Градиентный спуск</div>
+<h2>Шаг за шагом</h2>
+<p class="li">Считаем предсказание при текущих весах</p>
+<p class="li">Сравниваем с реальностью → ошибка</p>
+<p class="li">Вычисляем градиент — куда и насколько менять веса</p>
+<p class="li">Обновляем: <span class="highlight">w = w − learning_rate × градиент</span></p>
+<p class="li">Повторяем сотни раз, пока ошибка не перестанет падать</p>
+<div class="card" style="margin-top:1.5rem">
+<h3>Ключевой факт</h3>
+<p>ChatGPT обучается тем же градиентным спуском. Только вместо 2 параметров — <span class="highlight">миллиарды</span>.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="tag">Градиентный спуск</div>
+<h2>Learning rate — размер шага</h2>
+<div class="grid">
+<div class="card">
+<h3 class="bad">Слишком большой</h3>
+<p>Перепрыгивает минимум. Мечется туда-сюда. Не сходится.</p>
+</div>
+<div class="card">
+<h3 class="good">Правильный</h3>
+<p>Уверенно спускается к минимуму. Стабильно.</p>
+</div>
+</div>
+<div class="card" style="margin-top:1rem">
+<h3>Слишком маленький</h3>
+<p>Ползёт так медленно, что обучение займёт годы. Технически верно, практически бесполезно.</p>
+</div>
+<p style="margin-top:1rem">Типичные значения: 0.001, 0.01, 0.1. Подбираются экспериментально.</p>
+</div>
+
+<div class="slide">
+<div class="tag">Классификация</div>
+<h2>Новая задача — да или нет</h2>
+<p>Линейная регрессия предсказывает число. А если нужен ответ из двух вариантов?</p>
+<div class="grid">
+<div class="card">
+<p class="li">Письмо — спам или не спам?</p>
+<p class="li">Пациент — болен или здоров?</p>
+</div>
+<div class="card">
+<p class="li">Транзакция — мошенничество?</p>
+<p class="li">Отзыв — положительный?</p>
+</div>
+</div>
+<p style="margin-top:1.5rem">Нужна не цифра, а <span class="highlight">вероятность</span>. От 0 до 1.</p>
+</div>
+
+<div class="slide">
+<div class="tag">Классификация</div>
+<h2>Сигмоида — число → вероятность</h2>
+<div class="formula">σ(z) = 1 / (1 + e⁻ᶻ)</div>
+<div class="visual">
+z очень большой + → σ ≈ 1.0<br>
+z = 0 → σ = 0.5<br>
+z очень большой − → σ ≈ 0.0
+</div>
+<p>S-образная кривая. Любое число превращает в вероятность от 0 до 1.</p>
+<p style="margin-top:1rem">Порог: вероятность ≥ 0.5 → <span class="highlight">класс 1</span>, иначе → класс 0.</p>
+</div>
+
+<div class="slide">
+<div class="tag">Пример</div>
+<h2>Спам-фильтр в действии</h2>
+<p>Письмо: 150 символов, 3× «бесплатно», 7 восклицательных знаков, без вложений.</p>
+<div class="formula">z = (−0.01×150) + (2.5×3) + (0.8×7) + (−0.3×0) + 0.5 = 12.1</div>
+<p class="big" style="color:#8b5cf6">σ(12.1) ≈ 0.99999</p>
+<p>Спам с вероятностью <span class="highlight">99.999%</span>.</p>
+<p style="margin-top:1rem">Легитимное письмо от коллеги: длинное, без «бесплатно», с вложением:</p>
+<div class="formula">z = −19.8 → σ ≈ 0.0000000002</p>
+<p>Не спам. Модель уверена.</p>
+</div>
+
+<div class="slide">
+<div class="tag">Оценка модели</div>
+<h2>Почему «точность 99%» — обман</h2>
+<p>Из 1000 писем только 10 — спам. Модель говорит «все не спам».</p>
+<div class="card" style="margin-top:1rem">
+<p>Угадала 990 из 1000 → <span class="bad">точность 99%</span></p>
+<p>Но не нашла <span class="bad">ни одного</span> спам-письма. Бесполезна.</p>
+</div>
+<div class="grid" style="margin-top:1rem">
+<div class="card">
+<h3>Precision (точность)</h3>
+<p>Из названных спамом — сколько реально спам?</p>
+<p class="highlight">Мало ложных обвинений</p>
+</div>
+<div class="card">
+<h3>Recall (полнота)</h3>
+<p>Из всего спама — сколько нашли?</p>
+<p class="highlight">Мало пропущенного спама</p>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="tag">Пример</div>
+<h2>Баланс в реальной задаче</h2>
+<div class="grid">
+<div class="card">
+<h3>Диагностика болезней</h3>
+<p>Лучше ложная тревога, чем пропущенный диагноз. Высокий Recall важнее Precision.</p>
+</div>
+<div class="card">
+<h3>Спам-фильтр</h3>
+<p>Лучше пропустить спам, чем потерять важное письмо. Высокий Precision важнее Recall.</p>
+</div>
+</div>
+<p style="margin-top:1.5rem">Выбор порога зависит от <span class="highlight">цены ошибки</span>. Универсального ответа нет.</p>
+</div>
+
+<div class="slide">
+<div class="tag">Демонстрация</div>
+<h2>Попробуйте сами</h2>
+<table>
+<tr><th>Площадь (м²)</th><th>Цена (млн)</th></tr>
+<tr><td>25</td><td>2.3</td></tr>
+<tr><td>32</td><td>3.1</td></tr>
+<tr><td>40</td><td>3.8</td></tr>
+<tr><td>48</td><td>4.5</td></tr>
+<tr><td>55</td><td>5.2</td></tr>
+<tr><td>63</td><td>6.0</td></tr>
+<tr><td>70</td><td>6.8</td></tr>
+<tr><td>85</td><td>8.1</td></tr>
+</table>
+<p>Проведите прямую от руки. Формула: <span class="highlight">y ≈ 0.095 × x</span></p>
+<p>Квартира 50 м² → <span class="highlight">~4.75 млн</span></p>
+<p style="margin-top:1rem;font-size:1rem;color:#525252">А 200 м²? Экстраполяция — за пределами данных. Гарантий нет.</p>
+</div>
+
+<div class="slide">
+<div class="tag">Итоги</div>
+<h2>Что мы узнали</h2>
+<p class="li"><span class="highlight">Линейная регрессия</span> — прямая через данные. y = wx + b. Простая, но полезная.</p>
+<p class="li"><span class="highlight">Градиентный спуск</span> — шаг за шагом к минимуму ошибки. Тот же принцип в нейросетях.</p>
+<p class="li"><span class="highlight">Классификация</span> — сигмоида превращает числа в вероятности. Порог — точка решения.</p>
+<p class="li"><span class="highlight">Оценка</span> — accuracy недостаточно. Precision, Recall, F1 — честная картина.</p>
+<div class="demo">
+<p class="quote">«Нейросети — это развитие этих же принципов. Только больше слоёв и параметров.»</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="tag">Домашнее задание</div>
+<h2>Практика</h2>
+<div class="card">
+<h3>1. Нарисуйте регрессию</h3>
+<p>Придумайте 8-10 точек (рост и вес, часы и оценка). Проведите прямую. Оцените ошибку.</p>
+</div>
+<div class="card" style="margin-top:1rem">
+<h3>2. Придумайте классификатор</h3>
+<p>Задача из жизни. 3-5 признаков. Например: «брать ли зонт» — облачность, давление, прогноз, сезон.</p>
+</div>
+<div class="card" style="margin-top:1rem">
+<h3>3. Бонус</h3>
+<p>Почему линейная регрессия не предскажет цену идеально? Какие факторы она не учитывает?</p>
+</div>
+<p style="margin-top:1.5rem">Следующая лекция: <span class="highlight">биологический нейрон vs искусственный</span> — от прямой линии к нелинейности.</p>
+</div>
+
+<div class="nav">
+<button onclick="go(-1)">← Назад</button>
+<button onclick="go(1)">Далее →</button>
+</div>
+<div class="counter" id="counter"></div>
+
+<script>
+const slides=document.querySelectorAll('.slide');let cur=0;
+function show(n){cur=Math.max(0,Math.min(slides.length-1,n));slides.forEach((s,i)=>s.classList.toggle('active',i===cur));document.getElementById('progress').style.width=((cur+1)/slides.length*100)+'%';document.getElementById('counter').textContent=(cur+1)+' / '+slides.length}
+function go(d){show(cur+d)}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')go(1);if(e.key==='ArrowLeft')go(-1)});
+let tx=0;document.addEventListener('touchstart',e=>tx=e.touches[0].clientX);document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)go(dx<0?1:-1)});
+show(0);
+</script>
+</body>
+</html>
