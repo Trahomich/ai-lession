@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 13. Генерация видео и звука</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;height:100vh}
+.progress{position:fixed;top:0;left:0;height:2px;background:#8b5cf6;transition:width .3s;z-index:100}
+.slide{display:none;height:100vh;padding:80px 120px;flex-direction:column;justify-content:center}
+.slide.active{display:flex}
+.num{color:#8b5cf6;font-size:14px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:32px}
+h1{font-size:56px;font-weight:700;line-height:1.15;margin-bottom:24px;color:#fff}
+h2{font-size:40px;font-weight:700;margin-bottom:24px;color:#fff}
+h3{font-size:28px;font-weight:600;margin-bottom:16px;color:#c4b5fd}
+p,.li{font-size:22px;line-height:1.7;color:#a3a3a3;margin-bottom:16px}
+.li{padding-left:24px;position:relative}
+.li::before{content:'→';position:absolute;left:0;color:#8b5cf6}
+.grid{display:grid;gap:32px;margin-top:24px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.card{background:#1a1a1a;border:1px solid #262626;border-radius:12px;padding:32px}
+.card h3{margin-bottom:12px}
+.card p{font-size:18px}
+.accent{color:#8b5cf6}
+.quote{font-size:28px;font-style:italic;color:#d4d4d4;border-left:3px solid #8b5cf6;padding-left:32px;margin:32px 0}
+.highlight{background:linear-gradient(135deg,#8b5cf6 0%,#6d28d9 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
+.demo{background:#1a1a1a;border:2px solid #8b5cf6;border-radius:16px;padding:48px;text-align:center}
+.demo p{color:#d4d4d4;font-size:24px}
+.badge{display:inline-block;background:#8b5cf6;color:#fff;padding:4px 12px;border-radius:6px;font-size:14px;font-weight:600;margin-right:8px}
+.nav{position:fixed;bottom:40px;right:40px;display:flex;gap:12px;z-index:100}
+.nav button{background:#1a1a1a;border:1px solid #333;color:#e5e5e5;width:48px;height:48px;border-radius:12px;font-size:20px;cursor:pointer;transition:all .2s}
+.nav button:hover{background:#8b5cf6;border-color:#8b5cf6}
+.footer{position:fixed;bottom:40px;left:40px;color:#525252;font-size:14px}
+.tag{display:inline-block;background:#262626;color:#a3a3a3;padding:6px 16px;border-radius:8px;font-size:16px;margin:4px}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="slide active" id="s1">
+<div class="num">Лекция 13 · Модуль 5 · Генеративный ИИ</div>
+<h1>Генерация видео и звука</h1>
+<p style="font-size:24px;color:#a3a3a3;margin-top:16px">ИИ становится <span class="highlight">мультимодальным</span></p>
+<p style="font-size:18px;color:#525252;margin-top:48px">Курс «Искусственный интеллект — как это работает»</p>
+</div>
+
+<div class="slide" id="s2">
+<div class="num">Введение</div>
+<h2>Мир — это не неподвижные картинки</h2>
+<p>На прошлой лекции: diffusion-модели генерируют изображения из шума</p>
+<p>Сегодня: ИИ осваивает <span class="accent">видео, речь и музыку</span></p>
+<div class="quote">Можно ли считать сгенерированное видео «творчеством» — или это статистическая аппроксимация?</div>
+</div>
+
+<div class="slide" id="s3">
+<div class="num">Видео · Основы</div>
+<h2>Видео = последовательность кадров</h2>
+<p>24–30 кадров в секунду → 1 минута = <span class="accent">1800 изображений</span></p>
+<p>Кадры не могут быть независимыми — нужна <span class="highlight">временная согласованность</span></p>
+<p style="margin-top:24px">Если в кадре 1 человек у окна, а в кадре 2 — на другом конце комнаты → зритель видит «скачок»</p>
+</div>
+
+<div class="slide" id="s4">
+<div class="num">Видео · Как это работает</div>
+<h2>Diffusion + время</h2>
+<div class="grid g3">
+<div class="card">
+<h3>1. Текст</h3>
+<p>«Кот бежит по пляжу на закате»</p>
+</div>
+<div class="card">
+<h3>2. Diffusion</h3>
+<p>Шум → «брусок» данных: ширина × высота × <span class="accent">время</span></p>
+</div>
+<div class="card">
+<h3>3. Видео</h3>
+<p>Патчи в пространстве-времени, направляемые текстом</p>
+</div>
+</div>
+<p style="margin-top:24px">Инструменты: <span class="badge">Sora</span> <span class="badge">Runway</span> <span class="badge">Pika</span> <span class="badge">Kling</span></p>
+</div>
+
+<div class="slide" id="s5">
+<div class="num">Видео · Проблемы</div>
+<h2>Почему видео сложнее картинок</h2>
+<div class="grid g2">
+<div class="card">
+<h3>Согласованность</h3>
+<p>Объекты не должны менять форму, цвет, положение без причины. Фон стабильным</p>
+</div>
+<div class="card">
+<h3>Физика</h3>
+<p>Стакан падает → разбивается. Модель не «знает» физику — она видела похожие сцены</p>
+</div>
+<div class="card">
+<h3>Взаимодействия</h3>
+<p>Рукопожатие — огромная проблема. Руки встречаются, пальцы сжимаются естественно</p>
+</div>
+<div class="card">
+<h3>Длина</h3>
+<p>5 секунд — более-менее. 30 секунд — серьёзная проблема</p>
+</div>
+</div>
+</div>
+
+<div class="slide" id="s6">
+<div class="num">Речь · Основы</div>
+<h2>Text-to-Speech: от текста к звуку</h2>
+<div class="grid g3" style="margin-top:32px">
+<div class="card" style="text-align:center">
+<h3>Текст</h3>
+<p style="font-size:32px">📝</p>
+<p>«Привет, мир!»</p>
+</div>
+<div class="card" style="text-align:center">
+<h3>Спектрограмма</h3>
+<p style="font-size:32px">📊</p>
+<p>Частоты × время</p>
+</div>
+<div class="card" style="text-align:center">
+<h3>Звук</h3>
+<p style="font-size:32px">🔊</p>
+<p>Звуковая волна</p>
+</div>
+</div>
+<p style="margin-top:24px">Современные системы: <span class="badge">ElevenLabs</span> <span class="badge">OpenAI TTS</span> <span class="badge">Azure</span> — неотличимы от живого человека</p>
+</div>
+
+<div class="slide" id="s7">
+<div class="num">Речь · Клонирование</div>
+<h2>3 секунды — и голос ваш</h2>
+<p>Достаточно <span class="highlight">3–10 секунд</span> аудиозаписи, чтобы модель научилась говорить этим голосом</p>
+<p style="margin-top:16px">Модель выучивает «голосовой профиль» — уникальные характеристики тембра, высоты, скорости речи</p>
+<div class="quote">Слушатель не может отличить синтезированный голос от настоящего</div>
+<p>Обратная задача — <span class="accent">Speech-to-Text</span> — Whisper от OpenAI: 680 000 часов на 99 языках</p>
+</div>
+
+<div class="slide" id="s8">
+<div class="num">Музыка</div>
+<h2>ИИ-композитор</h2>
+<p>Музыка = звук, организованный во времени</p>
+<div class="grid" style="margin-top:16px">
+<div style="display:flex;gap:12px;flex-wrap:wrap">
+<span class="tag">Ритм</span>
+<span class="tag">Гармония</span>
+<span class="tag">Мелодия</span>
+<span class="tag">Тембр</span>
+</div>
+</div>
+<p style="margin-top:24px">«Рок-баллада 80-х с электрогитарой про потерянную любовь» → полноценная песня</p>
+<p>Инструменты: <span class="badge">Suno</span> <span class="badge">Udio</span> <span class="badge">MusicLM</span></p>
+<div class="quote">Модель «выучила» паттерны: как звучит блюз, чем хип-хоп отличается от джаза</div>
+</div>
+
+<div class="slide" id="s9">
+<div class="num">Музыка · Как работает</div>
+<h2>Как языковая модель — но для звука</h2>
+<div class="grid g3">
+<div class="card" style="text-align:center">
+<h3>Токенизация</h3>
+<p>Звук нарезается на маленькие кусочки — аудио-токены</p>
+</div>
+<div class="card" style="text-align:center">
+<h3>Генерация</h3>
+<p>Transformer предсказывает следующий аудио-токен</p>
+</div>
+<div class="card" style="text-align:center">
+<h3>Декодирование</h3>
+<p>Токены → звуковая волна → музыка</p>
+</div>
+</div>
+<p style="margin-top:24px;color:#525252">Чего модель не может: симфонии, новые жанры, осознанное нарушение правил</p>
+</div>
+
+<div class="slide" id="s10">
+<div class="num">Deepfake · Что это</div>
+<h2>Deepfake: подмена реальности</h2>
+<p><span class="accent">Deep learning</span> + <span class="accent">Fake</span> = подмена лица, голоса, фигуры в видео</p>
+<div class="grid g2" style="margin-top:24px">
+<div class="card">
+<h3>Лицо</h3>
+<p>Autoencoder: кодируем лицо А → декодируем в лице Б. Человек Б говорит, но выглядит как А</p>
+</div>
+<div class="card">
+<h3>Голос</h3>
+<p>Клонирование + синхронизация губ. Человек «говорит» чужим голосом</p>
+</div>
+</div>
+</div>
+
+<div class="slide" id="s11">
+<div class="num">Deepfake · Хорошее</div>
+<h2>Deepfake — не только зло</h2>
+<div class="grid g2">
+<div class="card">
+<h3>🎬 Дубляж фильмов</h3>
+<p>Губы актёра двигаются синхронно с русской речью</p>
+</div>
+<div class="card">
+<h3>🏥 Медицина</h3>
+<p>Восстановление голоса для потерявших способность говорить</p>
+</div>
+<div class="card">
+<h3>📚 Образование</h3>
+<p>«Ожившие» исторические личности рассказывают о своей эпохе</p>
+</div>
+<div class="card">
+<h3>🎥 Кино</h3>
+<p>Молодые версии актёров — как в «Ирландце»</p>
+</div>
+</div>
+</div>
+
+<div class="slide" id="s12">
+<div class="num">Deepfake · Опасности</div>
+<h2>Тёмная сторона</h2>
+<div class="grid g2">
+<div class="card" style="border-color:#ef4444">
+<h3 style="color:#ef4444">📰 Фейковые новости</h3>
+<p>Политик «говорит» то, что никогда не говорил</p>
+</div>
+<div class="card" style="border-color:#ef4444">
+<h3 style="color:#ef4444">💰 Мошенничество</h3>
+<p>Звонок «от начальника» с клонированным голосом</p>
+</div>
+<div class="card" style="border-color:#ef4444">
+<h3 style="color:#ef4444">😈 Шантаж</h3>
+<p>Подмена лица в компрометирующих видео</p>
+</div>
+<div class="card" style="border-color:#ef4444">
+<h3 style="color:#ef4444">🤷 Дискредитация</h3>
+<p>Любое реальное видео можно объявить «deepfake»</p>
+</div>
+</div>
+</div>
+
+<div class="slide" id="s13">
+<div class="num">Deepfake · Защита</div>
+<h2>Гонка вооружений</h2>
+<div class="grid g2">
+<div class="card">
+<h3>🔐 Водяные знаки</h3>
+<p>Невидимые маркеры в сгенерированном видео</p>
+</div>
+<div class="card">
+<h3>🔍 Детекторы</h3>
+<p>Нейросети ищут артефакты, незаметные глазу</p>
+</div>
+<div class="card">
+<h3>✍️ Цифровые подписи</h3>
+<p>Камеры подписывают видео криптографическим ключом</p>
+</div>
+<div class="card">
+<h3>⚖️ Закон</h3>
+<p>Криминализация deepfake без согласия</p>
+</div>
+</div>
+<div class="quote">Генераторы улучшаются быстрее детекторов</div>
+</div>
+
+<div class="slide" id="s14">
+<div class="num">Демонстрация</div>
+<div class="demo">
+<h2 style="margin-bottom:24px">Живая демонстрация</h2>
+<p>🎬 Генерация видео по текстовому описанию</p>
+<p style="margin-top:16px">🎙️ Клонирование голоса — слышите разницу?</p>
+</div>
+</div>
+
+<div class="slide" id="s15">
+<div class="num">Итоги</div>
+<h2>Что мы узнали</h2>
+<div class="li">Видео = diffusion + время + temporal consistency</div>
+<div class="li">Речь и музыка = токенизация звука + transformer + вокодер</div>
+<div class="li">Мультимодальность — одна модель для текста, звука, видео</div>
+<div class="li">Deepfake: мощная технология с серьёзными этическими рисками</div>
+<div class="li">Генераторы улучшаются быстрее детекторов — критическое мышление важнее чем когда-либо</div>
+</div>
+
+<div class="slide" id="s16">
+<div class="num">Домашнее задание</div>
+<h2>На следующую неделю</h2>
+<p>1. Сгенерировать речь или музыку в любом инструменте (Suno, ElevenLabs)</p>
+<p>2. Найти deepfake-видео и проанализировать: какие артефакты выдают подделку?</p>
+<p>3. Подумать: как мы будем отличать реальность от подделки через 5 лет?</p>
+<div style="margin-top:48px;color:#525252">
+<p><span class="accent">Следующая лекция:</span> Где ИИ уже работает в вашей жизни — и вы этого не замечаете</p>
+</div>
+</div>
+
+<div class="footer" id="footer">13 / 16</div>
+<div class="nav">
+<button onclick="go(-1)">←</button>
+<button onclick="go(1)">→</button>
+</div>
+
+<script>
+const slides=document.querySelectorAll('.slide');let cur=0;
+function show(i){slides.forEach(s=>s.classList.remove('active'));slides[i].classList.add('active');document.getElementById('progress').style.width=(i+1)/slides.length*100+'%';document.getElementById('footer').textContent=(i+1)+' / '+slides.length;cur=i}
+function go(d){show(Math.max(0,Math.min(slides.length-1,cur+d)))}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')go(1);if(e.key==='ArrowLeft')go(-1)});
+document.addEventListener('touchstart',e=>t=e.touches[0].clientX);
+document.addEventListener('touchend',e=>{if(e.changedTouches[0].clientX-t>50)go(-1);if(t-e.changedTouches[0].clientX>50)go(1)});
+show(0);
+</script>
+</body>
+</html>
