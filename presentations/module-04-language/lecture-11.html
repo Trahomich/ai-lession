@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 11. Большие языковые модели (LLM)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0a;--surface:#141414;--text:#e5e5e5;--dim:#737373;--accent:#f59e0b;--accent2:#8b5cf6;--border:#262626}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+.slide{display:none;height:100vh;padding:6vh 10vw;flex-direction:column;justify-content:center}
+.slide.active{display:flex}
+h1{font-size:3.2rem;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-bottom:1.5rem}
+h2{font-size:2rem;font-weight:600;color:var(--accent);margin-bottom:1.5rem;letter-spacing:-.01em}
+h3{font-size:1.4rem;font-weight:600;margin-bottom:1rem;color:var(--text)}
+p,li{font-size:1.25rem;line-height:1.7;color:#d4d4d4}
+ul{list-style:none;padding:0}
+li{padding:.3rem 0 .3rem 1.5rem;position:relative}
+li::before{content:"→";position:absolute;left:0;color:var(--accent);font-weight:600}
+.accent{color:var(--accent)}
+.accent2{color:var(--accent2)}
+.dim{color:var(--dim)}
+.tag{display:inline-block;padding:.3rem .8rem;background:var(--accent);color:#000;border-radius:4px;font-size:.85rem;font-weight:600;margin-right:.5rem}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--accent);z-index:100;transition:width .3s}
+.nav{position:fixed;bottom:2rem;right:3rem;display:flex;gap:.5rem;z-index:100}
+.nav button{background:var(--surface);border:1px solid var(--border);color:var(--dim);padding:.4rem .8rem;border-radius:4px;cursor:pointer;font-size:.9rem}
+.nav button:hover{color:var(--text);border-color:var(--accent)}
+.counter{position:fixed;bottom:2rem;left:3rem;color:var(--dim);font-size:.85rem;z-index:100}
+.grid{display:grid;gap:1.5rem;margin-top:1rem}
+.grid-2{grid-template-columns:1fr 1fr}
+.grid-3{grid-template-columns:1fr 1fr 1fr}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.5rem}
+.card h3{font-size:1.1rem;margin-bottom:.5rem}
+.card p{font-size:1rem;color:var(--dim)}
+.quote{font-size:1.5rem;font-style:italic;color:var(--dim);border-left:3px solid var(--accent);padding-left:1.5rem;margin:1.5rem 0}
+.step{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1rem}
+.step-num{background:var(--accent);color:#000;width:2rem;height:2rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.highlight{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:1.5rem;margin:1rem 0}
+.formula{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:1rem;font-family:monospace;font-size:1.1rem;text-align:center;color:var(--accent);margin:.8rem 0}
+.comparison{display:flex;gap:2rem;margin-top:1rem}
+.comp-item{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.2rem}
+.comp-item .label{font-size:.85rem;color:var(--dim);margin-bottom:.3rem}
+.comp-item .value{font-size:1.3rem;font-weight:600}
+.badge{display:inline-block;padding:.2rem .6rem;border-radius:4px;font-size:.8rem;font-weight:600;margin:.2rem}
+.badge-green{background:rgba(34,197,94,.15);color:#22c55e}
+.badge-yellow{background:rgba(245,158,11,.15);color:#f59e0b}
+.badge-red{background:rgba(239,68,68,.15);color:#ef4444}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<!-- Slide 1: Title -->
+<div class="slide active">
+<span class="dim" style="font-size:1rem">Лекция 11 из 16 · Модуль 4: Язык и текст</span>
+<h1>Большие языковые модели<br><span class="accent">(LLM)</span></h1>
+<p class="dim" style="font-size:1.3rem">Как работает ChatGPT — от токенов до ответа</p>
+</div>
+
+<!-- Slide 2: Agenda -->
+<div class="slide">
+<h2>План лекции</h2>
+<div class="grid grid-2">
+<div class="card"><h3>1. Предобучение</h3><p>Предсказание следующего токена — простая задача, которая меняет всё</p></div>
+<div class="card"><h3>2. Fine-tuning</h3><p>От «знает всё» к «отвечает полезно»</p></div>
+<div class="card"><h3>3. RLHF</h3><p>Обучение с подкреплением от людей</p></div>
+<div class="card"><h3>4. Параметры</h3><p>Размер, контекст, температура — что значат цифры</p></div>
+</div>
+</div>
+
+<!-- Slide 3: The simple task -->
+<div class="slide">
+<h2>Задача, которая меняет всё</h2>
+<div class="formula">Дана последовательность токенов → Предскажи следующий</div>
+<div style="margin-top:1.5rem">
+<p style="margin-bottom:.5rem">«Сегодня на улице хорошая...» → <span class="accent">погода</span></p>
+<p style="margin-bottom:.5rem">«Кот сидит на...» → <span class="accent">подоконнике</span></p>
+<p style="margin-bottom:.5rem">«2 + 2 = ...» → <span class="accent">4</span></p>
+</div>
+<div class="quote">Чтобы правильно предсказывать следующее слово в ЛЮБОМ контексте, модель должна «понимать» грамматику, факты, логику, юмор и причинно-следственные связи.</div>
+</div>
+
+<!-- Slide 4: Training data -->
+<div class="slide">
+<h2>Обучение на всём интернете</h2>
+<div class="grid grid-3">
+<div class="card"><h3>Википедия</h3><p>Все языки, все статьи</p></div>
+<div class="card"><h3>Книги</h3><p>Тысячи оцифрованных произведений</p></div>
+<div class="card"><h3>Веб-страницы</h3><p>Common Crawl, миллиарды страниц</p></div>
+<div class="card"><h3>Форумы</h3><p>Reddit, StackOverflow</p></div>
+<div class="card"><h3>Код</h3><p>GitHub, репозитории</p></div>
+<div class="card"><h3>Статьи</h3><p>arXiv, PubMed</p></div>
+</div>
+<div class="highlight" style="margin-top:1.5rem">
+<p>Общий объём — <span class="accent">триллионы токенов</span>. Эквивалент: человек прочитал всю библиотеку. Сто раз.</p>
+</div>
+</div>
+
+<!-- Slide 5: Emergent abilities -->
+<div class="slide">
+<h2>Масштаб имеет значение</h2>
+<div class="grid">
+<div style="display:flex;gap:1rem;align-items:center;margin-bottom:.5rem">
+<span class="badge badge-green">100M</span><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div style="width:5%;height:100%;background:var(--accent);border-radius:2px"></div></div><span class="dim" style="font-size:.9rem">Дописывает предложения</span>
+</div>
+<div style="display:flex;gap:1rem;align-items:center;margin-bottom:.5rem">
+<span class="badge badge-green">1B</span><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div style="width:15%;height:100%;background:var(--accent);border-radius:2px"></div></div><span class="dim" style="font-size:.9rem">Связные тексты, простые ответы</span>
+</div>
+<div style="display:flex;gap:1rem;align-items:center;margin-bottom:.5rem">
+<span class="badge badge-yellow">7B</span><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div style="width:35%;height:100%;background:var(--accent);border-radius:2px"></div></div><span class="dim" style="font-size:.9rem">Разумные ответы, базовый код</span>
+</div>
+<div style="display:flex;gap:1rem;align-items:center;margin-bottom:.5rem">
+<span class="badge badge-yellow">70B</span><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div style="width:65%;height:100%;background:var(--accent);border-radius:2px"></div></div><span class="dim" style="font-size:.9rem">Сложные рассуждения, анализ</span>
+</div>
+<div style="display:flex;gap:1rem;align-items:center">
+<span class="badge badge-red">175B+</span><div style="flex:1;height:4px;background:var(--border);border-radius:2px"><div style="width:100%;height:100%;background:var(--accent);border-radius:2px"></div></div><span class="dim" style="font-size:.9rem">Эмерджентные способности</span>
+</div>
+</div>
+<div class="quote" style="margin-top:1.5rem">При достаточно большом масштабе модель начинает делать то, чему её явно не учили. Это называется эмерджентностью.</div>
+</div>
+
+<!-- Slide 6: Analogy -->
+<div class="slide">
+<h2>Аналогия</h2>
+<div class="quote" style="font-size:1.8rem;margin-top:2rem">
+Человек прочитал всю библиотеку мира. Он много знает. Он может продолжить любой текст «в стиле» любого автора. Он может ответить на большинство вопросов.<br><br>Но он не всегда прав. Он может путать факты. Он не «понимает» — он <span class="accent">выучил паттерны</span>.
+</div>
+<p style="margin-top:1.5rem">Именно так работает базовая языковая модель.</p>
+</div>
+
+<!-- Slide 7: The problem with base model -->
+<div class="slide">
+<h2>Проблема базовой модели</h2>
+<p style="margin-bottom:1rem">Напишем: «Как приготовить борщ?»</p>
+<div class="comparison">
+<div class="comp-item"><p class="label">Ожидание</p><p class="value" style="color:#22c55e">Рецепт с шагами</p></div>
+<div class="comp-item"><p class="label">Реальность</p><p class="value" style="color:var(--accent)">Продолжение текста в любом стиле</p></div>
+</div>
+<div class="highlight" style="margin-top:1.5rem">
+<p>Базовая модель — энциклопедия без оглавления. Вся информация есть, но не организована для ответов на вопросы.</p>
+</div>
+</div>
+
+<!-- Slide 8: SFT -->
+<div class="slide">
+<h2>Supervised Fine-Tuning (SFT)</h2>
+<div class="step"><div class="step-num">1</div><div><p>Собираем тысячи примеров: вопрос → хороший ответ</p></div></div>
+<div class="step"><div class="step-num">2</div><div><p>Дообучаем модель на этих примерах</p></div></div>
+<div class="step"><div class="step-num">3</div><div><p>Модель учится формату диалога и структуре ответа</p></div></div>
+<div class="highlight" style="margin-top:1rem">
+<p>Результат: модель превращается из «продолжателя текста» в <span class="accent">«помощника»</span></p>
+</div>
+</div>
+
+<!-- Slide 9: RLHF -->
+<div class="slide">
+<h2>RLHF — обучение с подкреплением от людей</h2>
+<div class="step"><div class="step-num">1</div><div><p><strong>Люди оценивают:</strong> модели даём вопрос → два ответа → человек выбирает лучший. Тысячи пар.</p></div></div>
+<div class="step"><div class="step-num">2</div><div><p><strong>Reward model:</strong> обучаем отдельную модель предсказывать, какой ответ человек сочтёт лучшим.</p></div></div>
+<div class="step"><div class="step-num">3</div><div><p><strong>RL-обучение:</strong> основная модель генерирует ответ → reward model оценивает → модель корректирует поведение.</p></div></div>
+<div class="quote">Как дрессировка собаки: правильное поведение → награда. Со временем модель «учится» вести себя так, как хотят люди.</div>
+</div>
+
+<!-- Slide 10: What RLHF gives -->
+<div class="slide">
+<h2>Что получает модель от RLHF</h2>
+<div class="grid grid-2">
+<div class="card" style="border-color:rgba(34,197,94,.3)"><h3 style="color:#22c55e">✓ Полезность</h3><p>Ответы по существу, с примерами, структурированные</p></div>
+<div class="card" style="border-color:rgba(239,68,68,.3)"><h3 style="color:#ef4444">✗ Вредность</h3><p>Отказ от вредных советов, опасной информации</p></div>
+<div class="card" style="border-color:rgba(59,130,246,.3)"><h3 style="color:#3b82f6">✓ Честность</h3><p>Признание неуверенности вместо уверенной лжи</p></div>
+<div class="card" style="border-color:rgba(139,92,246,.3)"><h3 style="color:#8b5cf6">✓ Вежливость</h3><p>Уважительный тон, готовность помочь</p></div>
+</div>
+<div class="highlight" style="margin-top:1rem">
+<p>Идеально? Нет. Модель всё ещё может галлюцинировать. Но реже и в менее критичных ситуациях.</p>
+</div>
+</div>
+
+<!-- Slide 11: Three stages -->
+<div class="slide">
+<h2>Три этапа «воспитания» модели</h2>
+<div style="display:flex;gap:1rem;margin-top:1.5rem;align-items:center;justify-content:center;flex-wrap:wrap">
+<div class="card" style="flex:1;min-width:180px;text-align:center"><h3>Предобучение</h3><p style="font-size:.9rem">Триллионы токенов<br>«Прочитать всю библиотеку»</p></div>
+<span class="dim" style="font-size:2rem">→</span>
+<div class="card" style="flex:1;min-width:180px;text-align:center"><h3>SFT</h3><p style="font-size:.9rem">Тысячи примеров<br>«Научиться отвечать»</p></div>
+<span class="dim" style="font-size:2rem">→</span>
+<div class="card" style="flex:1;min-width:180px;text-align:center"><h3>RLHF</h3><p style="font-size:.9rem">Оценки людей<br>«Быть полезным и безопасным»</p></div>
+</div>
+<div class="formula" style="margin-top:2rem">Базовая модель → Помощник → Безопасный помощник</div>
+</div>
+
+<!-- Slide 12: Parameters -->
+<div class="slide">
+<h2>Параметры — «размер мозга»</h2>
+<p style="margin-bottom:1rem">Параметры = веса связей между нейронами. Каждое число определяет, как модель реагирует на вход.</p>
+<div class="grid">
+<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border)"><span>GPT-2 (2019)</span><span class="accent">1.5B</span></div>
+<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border)"><span>GPT-3 (2020)</span><span class="accent">175B</span></div>
+<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border)"><span>LLaMA 2 (2023)</span><span class="accent">7B – 70B</span></div>
+<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border)"><span>GPT-4 (2023)</span><span class="accent">~1.8T</span></div>
+<div style="display:flex;justify-content:space-between;padding:.5rem 0"><span>LLaMA 3 (2024)</span><span class="accent">8B – 405B</span></div>
+</div>
+<p class="dim" style="margin-top:1rem;font-size:1rem">Тренд: не только гигантские модели, но и эффективные маленькие. LLaMA 3 8B не уступает старым 70B.</p>
+</div>
+
+<!-- Slide 13: Context window -->
+<div class="slide">
+<h2>Контекстное окно — «краткосрочная память»</h2>
+<p style="margin-bottom:1rem">Сколько текста модель «держит в голове» за один раз:</p>
+<div class="grid">
+<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border)"><span>GPT-2</span><span>~2 страницы</span></div>
+<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border)"><span>GPT-3</span><span>~8 страниц</span></div>
+<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border)"><span>GPT-4</span><span>до книги</span></div>
+<div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border)"><span>Gemini 1.5</span><span>несколько книг (1M)</span></div>
+<div style="display:flex;justify-content:space-between;padding:.5rem 0"><span>Claude 3</span><span>~200K токенов</span></div>
+</div>
+<div class="highlight" style="margin-top:1rem">
+<p>Превысили контекст — модель «забывает» начало. Как человек, который не помнит первую главу.</p>
+</div>
+</div>
+
+<!-- Slide 14: Temperature -->
+<div class="slide">
+<h2>Температура — «креативность»</h2>
+<div class="comparison">
+<div class="comp-item" style="text-align:center"><p class="label">T = 0</p><p class="value">Строгий профессор</p><p class="dim" style="font-size:.9rem;margin-top:.5rem">Всегда один и тот же ответ. Точно, но скучно.</p></div>
+<div class="comp-item" style="text-align:center;border-color:var(--accent)"><p class="label">T = 0.7</p><p class="value accent">Стандарт</p><p class="dim" style="font-size:.9rem;margin-top:.5rem">Разнообразно, но осмысленно.</p></div>
+<div class="comp-item" style="text-align:center"><p class="label">T = 1.0</p><p class="value">Писатель</p><p class="dim" style="font-size:.9rem;margin-top:.5rem">Творчески, непредсказуемо.</p></div>
+<div class="comp-item" style="text-align:center"><p class="label">T = 1.5+</p><p class="value" style="color:#ef4444">Хаос</p><p class="dim" style="font-size:.9rem;margin-top:.5rem">Бессмыслица.</p></div>
+</div>
+</div>
+
+<!-- Slide 15: Temperature demo -->
+<div class="slide">
+<h2>Демонстрация: температура в действии</h2>
+<p style="margin-bottom:1rem">Промпт: «Однажды в лесу...»</p>
+<div class="grid">
+<div class="card"><h3>T = 0</h3><p style="font-size:1rem;font-style:italic">«...грибник нашёл большую корзину белых грибов. Это был обычный осенний день.»</p></div>
+<div class="card"><h3>T = 0.7</h3><p style="font-size:1rem;font-style:italic">«...между двумя старыми дубами мелькнул странный свет. Грибник остановился и прищурился.»</p></div>
+<div class="card"><h3>T = 1.5</h3><p style="font-size:1rem;font-style:italic">«...танцевали квантовые белки с фрактальными хвостами, и время потекло вспять через седьмое измерение.»</p></div>
+</div>
+</div>
+
+<!-- Slide 16: Practical advice -->
+<div class="slide">
+<h2>Практические настройки</h2>
+<div class="grid grid-3">
+<div class="card" style="border-color:rgba(59,130,246,.3)"><h3>Факты</h3><p>T: 0 – 0.3</p><p style="font-size:.9rem;color:var(--dim)">Точные, воспроизводимые ответы</p></div>
+<div class="card" style="border-color:rgba(245,158,11,.3)"><h3>Мозговой штурм</h3><p>T: 0.7 – 0.9</p><p style="font-size:.9rem;color:var(--dim)">Разнообразные идеи, но по теме</p></div>
+<div class="card" style="border-color:rgba(139,92,246,.3)"><h3>Творчество</h3><p>T: 0.9 – 1.2</p><p style="font-size:.9rem;color:var(--dim)">Неожиданные образы, метафоры</p></div>
+</div>
+</div>
+
+<!-- Slide 17: Key takeaways -->
+<div class="slide">
+<h2>Ключевые тезисы</h2>
+<ul>
+<li>LLM — это невероятно точное <span class="accent">статистическое угадывание</span>, а не «понимание»</li>
+<li>Масштаб данных и модели — главный драйвер качества</li>
+<li>Три этапа: предобучение → SFT → RLHF</li>
+<li>RLHF делает модель «послушной», но не идеальной</li>
+<li>Температура и контекст — ваши инструменты управления</li>
+</ul>
+</div>
+
+<!-- Slide 18: Homework -->
+<div class="slide">
+<h2>Домашнее задание</h2>
+<div class="grid">
+<div class="card">
+<h3>Задание 1</h3>
+<p>Попросить любую LLM ответить на один и тот же вопрос с разной температурой. Сравнить результаты.</p>
+</div>
+<div class="card">
+<h3>Задание 2</h3>
+<p>Дать модели длинный текст и спросить о самом начале. Зафиксировать, когда модель начинает «забывать».</p>
+</div>
+</div>
+<div style="margin-top:2rem">
+<p><span class="accent">Следующая лекция:</span> Генерация изображений — Stable Diffusion, Midjourney, DALL-E. От шума к шедевру.</p>
+</div>
+</div>
+
+</div>
+<div class="counter" id="counter"></div>
+<div class="nav">
+<button onclick="go(-1)">← Назад</button>
+<button onclick="go(1)">Далее →</button>
+</div>
+
+<script>
+const slides=document.querySelectorAll('.slide');let cur=0;
+function show(n){cur=Math.max(0,Math.min(slides.length-1,n));slides.forEach((s,i)=>s.classList.toggle('active',i===cur));document.getElementById('progress').style.width=((cur+1)/slides.length*100)+'%';document.getElementById('counter').textContent=(cur+1)+' / '+slides.length}
+function go(d){show(cur+d)}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')go(1);if(e.key==='ArrowLeft')go(-1)});
+let tx=0;document.addEventListener('touchstart',e=>tx=e.touches[0].clientX);document.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>50)go(d<0?1:-1)});
+show(0);
+</script>
+</body>
+</html>
