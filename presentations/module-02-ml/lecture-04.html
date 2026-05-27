@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 4. Машинное обучение — идея без магии</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overflow:hidden;height:100vh}
+.progress{position:fixed;top:0;left:0;height:2px;background:#6366f1;z-index:100;transition:width .3s}
+.slide{display:none;height:100vh;padding:8vh 10vw;flex-direction:column;justify-content:center}
+.slide.active{display:flex}
+h1{font-size:3.2rem;font-weight:700;line-height:1.15;margin-bottom:1.5rem;letter-spacing:-.02em}
+h2{font-size:2.2rem;font-weight:600;margin-bottom:2rem;color:#a5b4fc}
+h3{font-size:1.5rem;font-weight:500;margin-bottom:1rem;color:#c4b5fd}
+p,li{font-size:1.35rem;line-height:1.75;color:#a3a3a3;margin-bottom:.8rem}
+ul{list-style:none;padding-left:0}
+li::before{content:'→ ';color:#6366f1}
+.accent{color:#6366f1;font-weight:600}
+.tag{display:inline-block;background:#1e1b4b;color:#a5b4fc;padding:.25rem .75rem;border-radius:4px;font-size:.9rem;margin:.25rem .25rem .25rem 0}
+.formula{background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:1.5rem 2rem;margin:1.5rem 0;font-family:'SF Mono',monospace;font-size:1.3rem;color:#e5e5e5;text-align:center}
+.vs{display:flex;gap:3rem;margin:1.5rem 0}
+.vs>div{flex:1;background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:1.5rem}
+.vs h3{margin-bottom:.5rem}
+.highlight{background:#1e1b4b;border-left:3px solid #6366f1;padding:1rem 1.5rem;margin:1rem 0;border-radius:0 8px 8px 0}
+.demo{background:#0f172a;border:1px solid #1e3a5f;border-radius:8px;padding:1.5rem;margin:1rem 0}
+.demo p{color:#93c5fd}
+.nav{position:fixed;bottom:2rem;right:3rem;display:flex;gap:.5rem;z-index:100}
+.nav button{background:#1e1e1e;border:1px solid #333;color:#e5e5e5;padding:.5rem 1rem;border-radius:6px;cursor:pointer;font-size:1rem}
+.nav button:hover{background:#333}
+.counter{position:fixed;bottom:2rem;left:3rem;color:#525252;font-size:.9rem;z-index:100}
+.section-title h1{font-size:4rem;color:#6366f1}
+.section-title p{font-size:1.3rem;color:#737373}
+.columns{display:flex;gap:2rem;margin:1rem 0}
+.columns>div{flex:1}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+
+<!-- Slide 1: Title -->
+<div class="slide active">
+<h1>Машинное обучение — идея без магии</h1>
+<p style="font-size:1.4rem;color:#737373">Лекция 4 · Модуль 2: Как машины «учатся»</p>
+</div>
+
+<!-- Slide 2: Recap -->
+<div class="slide">
+<h2>Что мы знаем</h2>
+<ul>
+<li>Обычные программы — точные правила, но негибкие</li>
+<li>Написать правила для распознавания кошки — <span class="accent">невозможно</span></li>
+<li>Мир слишком сложен для if/else</li>
+<li>Нужен другой подход — <span class="accent">показать примеры</span></li>
+</ul>
+</div>
+
+<!-- Slide 3: Paradigm shift -->
+<div class="slide">
+<h2>Два подхода</h2>
+<div class="vs">
+<div>
+<h3>Классическое программирование</h3>
+<div class="formula">Правила + Данные → Ответ</div>
+<p>Вы пишете правила. Машина выполняет.</p>
+</div>
+<div>
+<h3>Машинное обучение</h3>
+<div class="formula">Данные + Ответы → Правила</div>
+<p>Вы даёте примеры. Машина <span class="accent">сама</span> находит правила.</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 4: Analogy -->
+<div class="slide">
+<h2>Аналогия: учим ребёнка</h2>
+<div class="vs">
+<div>
+<h3>Правила</h3>
+<p>«Кошки маленькие, острые уши, мяукают»</p>
+<p>Мопс — маленький, не лает. Кошка? <span class="accent">Нет!</span> Правило сломалось.</p>
+</div>
+<div>
+<h3>Примеры</h3>
+<p>100 фото кошек + 100 фото собак</p>
+<p>Ребёнок <span class="accent">сам</span> формирует представление</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 5: Training/Test -->
+<div class="slide">
+<h2>Обучающая и тестовая выборка</h2>
+<div class="vs">
+<div>
+<h3>Обучающая (80%)</h3>
+<p>Примеры для тренировки модели</p>
+<p>Модель видит и входы, и ответы</p>
+</div>
+<div>
+<h3>Тестовая (20%)</h3>
+<p>Примеры, которых модель <span class="accent">не видела</span></p>
+<p>Проверка: обобщает или зазубрила?</p>
+</div>
+</div>
+<div class="highlight">
+<p>Студент выучил все ответы к экзамену. Дай новый вопрос — провалится. Тестовая выборка — «новые вопросы».</p>
+</div>
+</div>
+
+<!-- Slide 6: Three types -->
+<div class="slide">
+<h2>Три вида машинного обучения</h2>
+<div class="vs">
+<div>
+<h3>С учителем</h3>
+<p>Есть правильные ответы</p>
+<span class="tag">Классификация</span>
+<span class="tag">Регрессия</span>
+</div>
+<div>
+<h3>Без учителя</h3>
+<p>Ответов нет — ищем структуру</p>
+<span class="tag">Кластеризация</span>
+<span class="tag">Аномалии</span>
+</div>
+<div>
+<h3>С подкреплением</h3>
+<p>Действия и награды</p>
+<span class="tag">Игры</span>
+<span class="tag">Роботы</span>
+</div>
+</div>
+</div>
+
+<!-- Slide 7: Supervised -->
+<div class="slide">
+<h2>Обучение с учителем</h2>
+<p>«Учитель» — это правильные ответы в данных</p>
+<ul>
+<li><span class="accent">Классификация:</span> спам / не спам, кошка / собака, диагноз А / Б</li>
+<li><span class="accent">Регрессия:</span> цена квартиры, температура завтра, срок доставки</li>
+</ul>
+<div class="highlight">
+<p>Самый распространённый вид ML. Большинство задач вокруг нас — supervised learning.</p>
+</div>
+</div>
+
+<!-- Slide 8: Unsupervised -->
+<div class="slide">
+<h2>Обучение без учителя</h2>
+<p>Правильных ответов нет. Только данные.</p>
+<ul>
+<li><span class="accent">Кластеризация:</span> сгруппировать клиентов по поведению</li>
+<li><span class="accent">Аномалии:</span> найти необычные транзакции (мошенничество)</li>
+<li><span class="accent">Снижение размерности:</span> сжать данные, оставив главное</li>
+</ul>
+<div class="highlight">
+<p>Аналогия: дать карту звёздного неба и попросить «найди созвездия» — никто не говорил, где они.</p>
+</div>
+</div>
+
+<!-- Slide 9: Reinforcement -->
+<div class="slide">
+<h2>Обучение с подкреплением</h2>
+<p>Среда + действия + награды/штрафы</p>
+<ul>
+<li>Хорошее действие → <span class="accent">награда</span></li>
+<li>Плохое действие → <span class="accent">штраф</span></li>
+<li>Модель учится стратегию максимизации награды</li>
+</ul>
+<div class="highlight">
+<p>Примеры: AlphaGo (Го), робот учится ходить, автопилот. Аналогия: дрессировка собаки — «сел = лакомство».</p>
+</div>
+</div>
+
+<!-- Slide 10: Features -->
+<div class="slide section-title">
+<h1>Признаки</h1>
+<p>Как компьютер «видит» мир</p>
+</div>
+
+<!-- Slide 11: What are features -->
+<div class="slide">
+<h2>Что такое признак</h2>
+<p>Признак (feature) = измеримая характеристика объекта, выраженная <span class="accent">числом</span></p>
+<div class="columns">
+<div>
+<h3>Квартира</h3>
+<p>Площадь: 45 м²</p>
+<p>Этаж: 7</p>
+<p>До метро: 12 мин</p>
+<p>Год: 2015</p>
+<p>Комнаты: 2</p>
+</div>
+<div>
+<h3>Письмо (спам?)</h3>
+<p>Длина: 847 символов</p>
+<p>«!!!»: 14 штук</p>
+<p>«бесплатно»: 0.03</p>
+<p>Ссылки: 7</p>
+<p>В контактах: нет (0)</p>
+</div>
+</div>
+</div>
+
+<!-- Slide 12: Vectors -->
+<div class="slide">
+<h2>Вектор признаков</h2>
+<div class="formula">Квартира = [45, 7, 12, 2015, 2, 1, 1]</div>
+<div class="formula">Письмо = [847, 14, 0.03, 1, 7, 0]</div>
+<p>Каждый объект — точка в многомерном пространстве</p>
+<div class="highlight">
+<p>7 признаков = 7-мерное пространство. Невозможно визуализировать, но компьютер работает с ним без проблем.</p>
+</div>
+</div>
+
+<!-- Slide 13: Feature engineering -->
+<div class="slide">
+<h2>Feature engineering</h2>
+<p>Выбор правильных признаков <span class="accent">важнее</span> выбора алгоритма</p>
+<div class="vs">
+<div>
+<h3>Плохие признаки</h3>
+<p>Средняя яркость пикселей</p>
+<p>Размер файла</p>
+</div>
+<div>
+<h3>Хорошие признаки</h3>
+<p>Форма ушей</p>
+<p>Длина морды</p>
+</div>
+</div>
+<p>Проблема: многие признаки сложно выразить числом вручную. Поэтому — глубокое обучение (автоматическое извлечение).</p>
+</div>
+
+<!-- Slide 14: Overfitting/Underfitting -->
+<div class="slide section-title">
+<h1>Переобучение vs недообучение</h1>
+<p>Студент-зубрила, студент-лентяй и студент-идеал</p>
+</div>
+
+<!-- Slide 15: Three students -->
+<div class="slide">
+<h2>Три студента на экзамене</h2>
+<div class="vs">
+<div>
+<h3>Зубрила 📝</h3>
+<p>Выучил ответы наизусть</p>
+<p>Знакомые вопросы — 100%</p>
+<p>Новые вопросы — провал</p>
+<p>= <span class="accent">Overfitting</span></p>
+</div>
+<div>
+<h3>Лентяй 😴</h3>
+<p>Прочитал по диагонали</p>
+<p>Даже знакомые — плохо</p>
+<p>Новые — ещё хуже</p>
+<p>= <span class="accent">Underfitting</span></p>
+</div>
+<div>
+<h3>Идеал 💡</h3>
+<p>Понял принципы</p>
+<p>Знакомые — отлично</p>
+<p>Новые — рассуждает</p>
+<p>= <span class="accent">Good fit</span></p>
+</div>
+</div>
+</div>
+
+<!-- Slide 16: Balance -->
+<div class="slide">
+<h2>Баланс</h2>
+<p>Модель должна быть достаточно сложной, но не слишком</p>
+<ul>
+<li>Кросс-валидация — проверка на разных частях данных</li>
+<li>Регуляризация — штраф за сложность</li>
+<li>Ранняя остановка — прекратить до переобучения</li>
+<li><span class="accent">Больше данных</span> — лучший способ</li>
+</ul>
+</div>
+
+<!-- Slide 17: Demo -->
+<div class="slide">
+<div class="demo">
+<h3>🎯 Демонстрация</h3>
+<p>10 фото фруктов → «это яблоко, это банан...»</p>
+<p>5 новых фото → кто понял ПРИНЦИП, а кто запомнил ПРИМЕРЫ?</p>
+<p>Обобщение vs запоминание — наглядно</p>
+</div>
+</div>
+
+<!-- Slide 18: Summary -->
+<div class="slide">
+<h2>Итоги</h2>
+<ul>
+<li>ML = <span class="accent">данные + ответы → правила</span> (переворот в программировании)</li>
+<li>Три вида: с учителем, без учителя, с подкреплением</li>
+<li>Признаки — мост между миром и машиной (всё в числа!)</li>
+<li>Переобучение — главная ловушка (зубрёжка ≠ понимание)</li>
+</ul>
+<div class="highlight">
+<p><strong>ДЗ:</strong> Придумать 5 признаков для задачи «понравится ли фильм»</p>
+</div>
+<p style="margin-top:1rem;color:#525252">Лекция 5: Линейная регрессия и классификация — первые модели</p>
+</div>
+
+<div class="counter" id="counter"></div>
+<div class="nav">
+<button onclick="prev()">← Назад</button>
+<button onclick="next()">Далее →</button>
+</div>
+
+<script>
+const slides=document.querySelectorAll('.slide');let cur=0;
+function show(n){slides[cur].classList.remove('active');cur=Math.max(0,Math.min(slides.length-1,n));slides[cur].classList.add('active');document.getElementById('progress').style.width=(cur+1)/slides.length*100+'%';document.getElementById('counter').textContent=(cur+1)+' / '+slides.length}
+function next(){if(cur<slides.length-1)show(cur+1)}
+function prev(){if(cur>0)show(cur-1)}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')next();if(e.key==='ArrowLeft')prev()});
+document.addEventListener('touchstart',e=>x0=e.touches[0].clientX);
+document.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-x0;d<-50?next():d>50&&prev()});
+show(0);
+</script>
+</body>
+</html>
