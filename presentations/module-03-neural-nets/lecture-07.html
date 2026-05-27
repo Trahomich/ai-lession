@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 7. Нейронные сети — от одного нейрона к глубокой сети</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;height:100vh}
+.slide{display:none;flex-direction:column;justify-content:center;align-items:center;height:100vh;padding:60px 80px;position:relative}
+.slide.active{display:flex}
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#6366f1,#8b5cf6);transition:width .3s;z-index:100}
+.nav{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:100}
+.nav button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#a1a1aa;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s}
+.nav button:hover{background:rgba(255,255,255,.15);color:#fff}
+.slide-num{position:fixed;bottom:30px;right:40px;color:#52525b;font-size:13px;z-index:100}
+h1{font-size:3.2em;font-weight:700;background:linear-gradient(135deg,#c7d2fe,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;line-height:1.2;margin-bottom:20px}
+h2{font-size:2.4em;font-weight:600;color:#e5e5e5;text-align:center;margin-bottom:30px}
+h3{font-size:1.6em;font-weight:600;color:#c7d2fe;margin-bottom:20px}
+p{font-size:1.25em;line-height:1.7;color:#a1a1aa;max-width:800px;text-align:center}
+.section-tag{font-size:.85em;color:#6366f1;text-transform:uppercase;letter-spacing:3px;margin-bottom:20px}
+.highlight{color:#a78bfa;font-weight:500}
+.accent{color:#f59e0b;font-weight:500}
+.card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:30px 40px;max-width:700px;width:100%}
+.card p{text-align:left}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px;width:100%}
+.grid .card{padding:24px 30px}
+.big-num{font-size:5em;font-weight:700;color:#6366f1;line-height:1}
+.steps{display:flex;flex-direction:column;gap:16px;max-width:700px;width:100%}
+.step{display:flex;align-items:flex-start;gap:16px}
+.step-num{min-width:36px;height:36px;background:rgba(99,102,241,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#a78bfa;font-weight:600;font-size:.9em;flex-shrink:0}
+.step-text{font-size:1.1em;color:#a1a1aa;line-height:1.5;padding-top:6px}
+.formula{font-family:'Courier New',monospace;font-size:1.3em;color:#c7d2fe;background:rgba(99,102,241,.08);padding:16px 24px;border-radius:12px;display:inline-block;margin:12px 0}
+.diagram{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:20px 0}
+.diagram .box{padding:14px 24px;border-radius:10px;font-size:1em;font-weight:500;text-align:center}
+.box-input{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:#86efac}
+.box-hidden{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:#a5b4fc}
+.box-output{background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.25);color:#fdba74}
+.arrow{color:#52525b;font-size:1.4em}
+.note{font-size:.95em;color:#71717a;font-style:italic;margin-top:16px;text-align:center}
+.tag{display:inline-block;padding:4px 12px;border-radius:6px;font-size:.85em;margin:4px}
+.tag-green{background:rgba(34,197,94,.12);color:#86efac}
+.tag-purple{background:rgba(99,102,241,.12);color:#a5b4fc}
+.tag-amber{background:rgba(245,158,11,.12);color:#fbbf24}
+.demo-box{background:rgba(139,92,246,.06);border:1px dashed rgba(139,92,246,.3);border-radius:16px;padding:30px 40px;max-width:700px;width:100%;text-align:center}
+.demo-box p{text-align:center}
+.hw-box{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:16px;padding:30px 40px;max-width:700px;width:100%}
+.hw-box p,.hw-box li{text-align:left;font-size:1.05em;color:#a1a1aa;line-height:1.6}
+.hw-box ol{padding-left:20px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="nav"><button onclick="go(-1)">← Назад</button><button onclick="go(1)">Далее →</button></div>
+<div class="slide-num" id="slideNum"></div>
+
+<div class="slide">
+<div class="section-tag">Модуль 3 · Нейросети</div>
+<h1>Нейронные сети — от одного нейрона к глубокой сети</h1>
+<p>Лекция 7</p>
+</div>
+
+<div class="slide">
+<div class="section-tag">Повторение</div>
+<h2>Один нейрон — одна прямая</h2>
+<div class="card">
+<p>На прошлой лекции: перцептрон = взвешенная сумма + активация</p>
+<p style="margin-top:16px">Один нейрон проводит <span class="highlight">одну прямую линию</span> через пространство признаков</p>
+<p style="margin-top:16px">Но мир <span class="accent">нелинеен</span> — одна прямая не справляется</p>
+<p style="margin-top:16px" class="note">Сегодня: соединяем нейроны вместе → получаем силу</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="section-tag">Архитектура</div>
+<h2>Слои нейросети</h2>
+<div class="diagram">
+<div class="box box-input">Входной<br>слой</div>
+<div class="arrow">→</div>
+<div class="box box-hidden">Скрытые<br>слои</div>
+<div class="arrow">→</div>
+<div class="box box-output">Выходной<br>слой</div>
+</div>
+<p style="margin-top:20px">Конвейер: данные поступают, обрабатываются слой за слоем, на выходе — результат</p>
+</div>
+
+<div class="slide">
+<div class="section-tag">Архитектура</div>
+<h2>Три типа слоёв</h2>
+<div class="grid">
+<div class="card">
+<h3 style="color:#86efac">Входной</h3>
+<p>Количество нейронов = количество признаков. Квартира: площадь, этаж, метро, год, комнаты → <span class="highlight">5 нейронов</span></p>
+</div>
+<div class="card">
+<h3 style="color:#a5b4fc">Скрытые</h3>
+<p>«Фабрика» сети. Извлекают признаки, строят абстракции. Здесь происходит основная работа</p>
+</div>
+<div class="card">
+<h3 style="color:#fdba74">Выходной</h3>
+<p>1 нейрон → число (регрессия). 2 нейрона → да/нет. N нейронов → N классов</p>
+</div>
+<div class="card">
+<h3 style="color:#e5e5e5">Полносвязная</h3>
+<p>Каждый нейрон связан со <span class="highlight">всеми</span> нейронами следующего слоя</p>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="section-tag">Архитектура</div>
+<h2>Сеть 3-5-2: считаем параметры</h2>
+<div class="diagram">
+<div class="box box-input">3 нейрона</div>
+<div class="arrow">→</div>
+<div class="box box-hidden">5 нейронов</div>
+<div class="arrow">→</div>
+<div class="box box-output">2 нейрона</div>
+</div>
+<p style="margin-top:20px">3×5 = 15 весов + 5 bias = <span class="highlight">20</span></p>
+<p>5×2 = 10 весов + 2 bias = <span class="highlight">12</span></p>
+<p style="margin-top:12px;font-size:1.4em;color:#e5e5e5;font-weight:600">Итого: 32 параметра</p>
+<p class="note">GPT-4: ~1.8 триллиона параметров. Но принцип тот же</p>
+</div>
+
+<div class="slide">
+<div class="section-tag">Архитектура</div>
+<h2>Что происходит внутри слоёв</h2>
+<div class="steps">
+<div class="step"><div class="step-num">1</div><div class="step-text">Вход: пиксели изображения</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-text">Слой 1: края, линии, градиенты</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-text">Слой 2: формы, текстуры, уголки</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-text">Слой 3: глаза, уши, контуры</div></div>
+<div class="step"><div class="step-num">5</div><div class="step-text">Выход: «кошка, вероятность 0.94»</div></div>
+</div>
+<p class="note">Каждый слой — новый уровень абстракции. Никто не программирует их вручную</p>
+</div>
+
+<div class="slide">
+<div class="section-tag">Обучение</div>
+<h2>Проблема: как обновить тысячи весов?</h2>
+<div class="card">
+<p>Сеть с 1000 весов делает ошибку. Какой вес виноват?</p>
+<p style="margin-top:16px">Аналогия: компания из 100 человек. Проект провалился. <span class="accent">Кто виноват?</span></p>
+<p style="margin-top:16px">Программист? Менеджер? Дизайнер? Тестировщик?</p>
+<p style="margin-top:16px">Каждый вложил свою <span class="highlight">долю</span> в провал</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="section-tag">Обучение</div>
+<h2>Backpropagation — обратное распространение</h2>
+<div class="steps">
+<div class="step"><div class="step-num">1</div><div class="step-text"><b>Forward pass</b> — пропускаем данные, получаем предсказание</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-text"><b>Ошибка</b> — сравниваем с правильным ответом</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-text"><b>Градиент выхода</b> — какая доля ошибки на выходном слое</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-text"><b>Назад!</b> — цепное правило раскручивает градиент к входу</div></div>
+<div class="step"><div class="step-num">5</div><div class="step-text"><b>Обновление</b> — каждый вес сдвигается на свой градиент</div></div>
+<div class="step"><div class="step-num">6</div><div class="step-text"><b>Повтор</b> — для каждого примера, для каждой эпохи</div></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="section-tag">Обучение</div>
+<h2>Цепное правило</h2>
+<div class="formula">dy/dx = dy/dz × dz/dx</div>
+<p>Нейросеть — цепочка функций. Выход зависит от последнего слоя, тот от предыдущего — и так до входа</p>
+<p style="margin-top:16px">«Раскручиваем» цепочку от выхода к входу</p>
+<p style="margin-top:16px">Каждый вес узнаёт свою <span class="highlight">долю ответственности</span> за ошибку</p>
+</div>
+
+<div class="slide">
+<div class="section-tag">Обучение</div>
+<h2>Почему это работает</h2>
+<div class="card">
+<p>Backpropagation <span class="accent">не гарантирует</span> лучший результат</p>
+<p style="margin-top:16px">Ландшафт потерь — сложный, с множеством локальных минимумов</p>
+<p style="margin-top:16px">Но на практике — с правильными настройками — находит <span class="highlight">достаточно хорошие</span> решения</p>
+<p style="margin-top:20px;font-size:1.3em;color:#e5e5e5;font-weight:500">1986 год. Румельхарт, Хинтон, Уильямс. Без этого алгоритма не было бы ни ChatGPT, ни автопилота.</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="section-tag">Гиперпараметры</div>
+<h2>Ручки управления сетью</h2>
+<p>Параметры — сеть выучивает сама (веса)</p>
+<p style="margin-top:12px">Гиперпараметры — <span class="highlight">настраивает человек</span></p>
+<p style="margin-top:20px">Аналогия: повар выучивает сколько соли нужно (параметры). Но температуру плиты и размер кастрюли выбирает шеф (гиперпараметры)</p>
+</div>
+
+<div class="slide">
+<div class="section-tag">Гиперпараметры</div>
+<h2>Learning rate — скорость обучения</h2>
+<div class="grid">
+<div class="card" style="border-color:rgba(239,68,68,.2)">
+<h3 style="color:#fca5a5">Слишком большой</h3>
+<p>Перепрыгивает минимум. Потери растут. Человек прыгает через долину</p>
+</div>
+<div class="card" style="border-color:rgba(34,197,94,.2)">
+<h3 style="color:#86efac">Оптимальный</h3>
+<p>Быстро сходится, не проскакивает. Adam и другие адаптивные алгоритмы</p>
+</div>
+<div class="card" style="border-color:rgba(245,158,11,.2)">
+<h3 style="color:#fbbf24">Слишком маленький</h3>
+<p>Учится вечность. Тысячи эпох без прогресса. Ползёт по миллиметру</p>
+</div>
+<div class="card">
+<h3 style="color:#a5b4fc">Решение</h3>
+<p>Адаптивные алгоритмы: Adam, AdaGrad — автоматически подстраивают скорость</p>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="section-tag">Гиперпараметры</div>
+<h2>Размер сети и регуляризация</h2>
+<div class="grid">
+<div class="card">
+<h3 style="color:#a5b4fc">Слои и нейроны</h3>
+<p>Больше → сложнее → риск переобучения</p>
+<p>Правило: начинай с простого</p>
+</div>
+<div class="card">
+<h3 style="color:#86efac">ReLU</h3>
+<p>Стандарт для скрытых слоёв</p>
+<p>f(x) = max(0, x)</p>
+<p>Не насыщается, быстро считает</p>
+</div>
+<div class="card">
+<h3 style="color:#fbbf24">Dropout</h3>
+<p>Случайно «выключает» нейроны при обучении</p>
+<p>Аналогия: спортсмен с завязанными глазами</p>
+</div>
+<div class="card">
+<h3 style="color:#fdba74">Early stopping</h3>
+<p>Валидационная ошибка растёт → стоп</p>
+<p>Переобучение начинается</p>
+</div>
+</div>
+</div>
+
+<div class="slide">
+<div class="section-tag">Демонстрация</div>
+<h2>TensorFlow Playground</h2>
+<div class="demo-box">
+<p>playground.tensorflow.org</p>
+<p style="margin-top:16px">Эксперимент 1: 1 слой, 2 нейрона → простая задача ✓</p>
+<p>Эксперимент 2: 1 слой, 2 нейрона → спираль ✗</p>
+<p>Эксперимент 3: 3 слоя по 6 нейронов → спираль ✓</p>
+<p>Эксперимент 4: слишком много слоёв → переобучение</p>
+</div>
+</div>
+
+<div class="slide">
+<div class="section-tag">Итоги</div>
+<h2>Что мы узнали</h2>
+<div class="steps">
+<div class="step"><div class="step-num">1</div><div class="step-text"><b>Слои</b> — входной, скрытые, выходной. Простые операции вместе = сложные преобразования</div></div>
+<div class="step"><div class="step-num">2</div><div class="step-text"><b>Backpropagation</b> — ошибка течёт от выхода к входу, каждый вес узнаёт свою вину</div></div>
+<div class="step"><div class="step-num">3</div><div class="step-text"><b>Гиперпараметры</b> — learning rate, слои, активация, dropout — ручки управления</div></div>
+<div class="step"><div class="step-num">4</div><div class="step-text"><b>Глубина</b> = иерархические признаки: от краёв к объектам, от букв к смыслу</div></div>
+</div>
+</div>
+
+<div class="slide">
+<div class="section-tag">Домашнее задание</div>
+<h2>Практика в TensorFlow Playground</h2>
+<div class="hw-box">
+<ol>
+<li>Откройте playground.tensorflow.org</li>
+<li>Выберите задачу «спираль»</li>
+<li>Протестируйте: 1 слой / 2 нейрона → 3 слоя / по 4 → 4 слоя / по 8</li>
+<li>Меняйте learning rate: 0.01, 0.1, 1.0</li>
+<li>Включите dropout — что меняется?</li>
+<li>Запишите наблюдения в 5-7 предложений</li>
+</ol>
+</div>
+</div>
+
+<div class="slide">
+<div class="section-tag">Следующая лекция</div>
+<h2>Свёрточные нейросети (CNN)</h2>
+<p style="font-size:1.4em">Как ИИ «видит» картинки</p>
+<p style="margin-top:20px">Фото кошки → пиксели → фильтры → края → формы → <span class="highlight">«кошка!»</span></p>
+</div>
+
+</div>
+<script>
+let cur=0;const slides=document.querySelectorAll('.slide');
+function show(n){slides.forEach(s=>s.classList.remove('active'));cur=Math.max(0,Math.min(slides.length-1,n));slides[cur].classList.add('active');document.getElementById('progress').style.width=((cur+1)/slides.length*100)+'%';document.getElementById('slideNum').textContent=(cur+1)+' / '+slides.length}
+function go(d){show(cur+d)}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')go(1);else if(e.key==='ArrowLeft')go(-1)});
+document.addEventListener('touchstart',e=>t=e.touches[0].X);document.addEventListener('touchend',e=>{if(e.changedTouches[0].clientX-t<-50)go(1);else if(e.changedTouches[0].clientX-t>50)go(-1)});
+show(0);
+</script>
+</body>
+</html>
